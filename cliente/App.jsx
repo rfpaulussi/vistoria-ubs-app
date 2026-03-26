@@ -3,10 +3,8 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { 
-  Camera, Clock, Star, LayoutDashboard, ArrowLeft, MessageSquare, Loader2, Share2, Users, FileText, Download, Send
+  Camera, Clock, Star, LayoutDashboard, ArrowLeft, MessageSquare, Loader2, Share2, Users, FileText, Download, Send, Printer
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 // --- CONFIGURAÇÃO FIREBASE E SHEETS ---
 const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDLjQ75Ice_nl7M0y6GuCJCv-_4FEk4Bw392mq3T74Kw5JKIi1zZAMOiZmhFT8JMMoLA/exec";
@@ -80,7 +78,6 @@ export default function App() {
   const [view, setView] = useState('form'); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [gerandoPdf, setGerandoPdf] = useState(false);
   const [historico, setHistorico] = useState([]);
   
   const [meta, setMeta] = useState({
@@ -146,48 +143,14 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const baixarPDF = async () => {
-    setGerandoPdf(true);
-
-    try {
-      const elemento = document.getElementById('relatorio-pdf');
-
-      // 🔥 ATIVA MODO PDF
-      if (elemento) elemento.classList.add("pdf-mode");
-
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const canvas = await html2canvas(elemento, {
-        scale: 1,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-      });
-
-      // 🔥 REMOVE MODO PDF
-      if (elemento) elemento.classList.remove("pdf-mode");
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-
-      pdf.save(`Vistoria_${meta.ubs || 'UBS'}.pdf`);
-
-    } catch (erro) {
-      console.error("Erro PDF:", erro);
-      alert("Falha ao gerar o PDF. Erro Técnico: " + (erro.message || erro));
-    } finally {
-      setGerandoPdf(false);
-    }
+  // --- O NOVO COMANDO NATIVO, INFALÍVEL E SEM TRAVAMENTOS ---
+  const gerarPDFNativo = () => {
+    window.print();
   };
 
   const compartilharWhatsApp = () => {
     const falhas = Object.entries(responses).filter(([_, data]) => data.status === data.trigger).map(([_, data]) => `• ${data.label}: ${data.reason}`).join('\n');
-    const texto = `🚨 *RELATÓRIO DE VISTORIA: ${meta.ubs.toUpperCase()}*\n👤 Encarregada: ${meta.encarregada}\n⭐ Nota: *${meta.notaVistoria}/10*\n📅 Retorno: ${meta.dataRetorno ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR') : 'A definir'}\n\n⚠️ *PRINCIPAIS FALHAS:*\n${falhas || 'Nenhuma falha crítica registrada.'}\n\n📝 *OBS:* ${meta.consideracoesGerais || 'Consultar relatório.'}`;
+    const texto = `🚨 *RELATÓRIO DE VISTORIA: ${meta.ubs.toUpperCase()}*\n👤 Encarregada: ${meta.encarregada}\n⭐ Nota: *${meta.notaVistoria}/10*\n📅 Retorno: ${meta.dataRetorno ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR') : 'A definir'}\n\n⚠️ *PRINCIPAIS FALHAS:*\n${falhas || 'Nenhuma falha crítica registrada.'}\n\n📝 *OBS:* ${meta.consideracoesGerais || 'Consultar relatório em PDF.'}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
   };
 
@@ -238,7 +201,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-40 font-sans text-[#0f172a]">
-      {/* --- ÁREA DO PDF (SEM SOMBRAS PARA EVITAR ERROS) --- */}
+      {/* TELA DE RELATÓRIO */}
       <div id="relatorio-pdf" className="bg-[#ffffff] max-w-2xl mx-auto p-8 min-h-screen border border-[#e2e8f0]" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>
         <div className="text-center mb-8 border-b-2 border-[#f1f5f9] pb-8">
           <h1 className="text-xs font-black uppercase tracking-widest text-[#94a3b8] mb-2">Relatório de Vistoria</h1>
@@ -286,9 +249,10 @@ export default function App() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-100 border-t border-slate-200 p-4 z-50 flex justify-center gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-        <button onClick={baixarPDF} disabled={gerandoPdf} className="flex-1 max-w-[160px] bg-slate-900 text-white py-4 px-2 rounded-2xl font-bold uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
-          {gerandoPdf ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />} {gerandoPdf ? 'Gerando...' : 'Baixar PDF'}
+      {/* --- BOTÕES NO RODAPÉ --- Note o "print:hidden" que esconde isso na hora de salvar o PDF */}
+      <div className="print:hidden fixed bottom-0 left-0 right-0 bg-slate-100 border-t border-slate-200 p-4 z-50 flex justify-center gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        <button onClick={gerarPDFNativo} className="flex-1 max-w-[160px] bg-slate-900 text-white py-4 px-2 rounded-2xl font-bold uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 active:scale-95">
+          <Printer size={16} /> Salvar PDF
         </button>
         <button onClick={compartilharWhatsApp} className="flex-1 max-w-[160px] bg-green-600 text-white py-4 px-2 rounded-2xl font-bold uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 active:scale-95">
           <MessageSquare size={16} /> WhatsApp
