@@ -41,7 +41,7 @@ const QuestionBlock = ({ label, id, icon: Icon, desc, responses, updateResponse,
         {Icon ? <Icon size={20} className={`mr-3 mt-1 ${isTriggered ? 'text-red-600' : 'text-teal-600'}`} /> : <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${isTriggered ? 'bg-red-500' : 'bg-teal-500'}`} />}
         <div>
           <label className="text-sm font-bold text-slate-800 leading-tight block">{label}</label>
-          {desc && <p className="text-[11px] text-slate-400 mt-1 italic">{desc}</p>}
+          {desc && <p className="text-[11px] text-slate-500 mt-1 leading-snug">{desc}</p>}
         </div>
       </div>
       
@@ -86,22 +86,23 @@ export default function App() {
     dataRetorno: '', consideracoesGerais: '', notaVistoria: 10
   });
 
+  // PERGUNTAS MELHORADAS (Mesmas chaves, mais detalhes visuais)
   const [responses, setResponses] = useState({
-    uniformeEquipe: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Equipe Uniformizada' },
-    usoEpi: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Uso de EPIs' },
-    ambienteGeral: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Ambiente Geral Limpo' },
-    sujeiraDerramamento: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Sujeira Tratada' },
-    altoToque: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Alto Toque' },
-    padraoLimpeza: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Padrão Correto' },
-    cronogramaLimpeza: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Cronograma' },
-    materiaOrganica: { status: '', reason: '', photo: null, trigger: 'Sim', label: 'Matéria Orgânica' },
-    residuosSegregados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Segregação' },
-    lixeirasTampadas: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Lixeiras Fechadas' },
-    areaResiduos: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Área de Resíduos' },
-    equipamentosMateriais: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Materiais Ok' },
-    produtosIdentificados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Produtos Id.' },
-    responsavelTurno: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Resp. Turno' },
-    problemasTratados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Feedback Imediato' }
+    uniformeEquipe: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Equipe Uniformizada e Identificada', desc: 'Todos os colaboradores estão utilizando uniforme completo e crachá visível?' },
+    usoEpi: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Uso Correto de EPIs', desc: 'A equipe está utilizando EPIs (luvas, botas, óculos) adequados para a atividade atual?' },
+    ambienteGeral: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Limpeza do Ambiente Geral', desc: 'Pisos, paredes, tetos e corredores estão limpos e livres de sujidades visíveis?' },
+    sujeiraDerramamento: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Tratamento de Sujeira e Derramamentos', desc: 'Houve limpeza imediata e adequada de derramamentos recentes ou sujidades pontuais?' },
+    altoToque: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Superfícies de Alto Toque', desc: 'Maçanetas, interruptores, corrimãos e balcões foram higienizados corretamente?' },
+    padraoLimpeza: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Padrão Técnico de Limpeza', desc: 'A limpeza está seguindo o fluxo correto (do menos para o mais contaminado, de cima para baixo)?' },
+    cronogramaLimpeza: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Cumprimento do Cronograma', desc: 'As rotinas diárias e os cronogramas de limpeza terminal estão em dia e preenchidos?' },
+    materiaOrganica: { status: '', reason: '', photo: null, trigger: 'Sim', label: 'Presença de Matéria Orgânica', desc: 'Foi encontrada matéria orgânica (sangue, fluidos) sem o devido isolamento e desinfecção?' },
+    residuosSegregados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Segregação de Resíduos', desc: 'O lixo infectante, comum e perfurocortante estão separados e acondicionados corretamente?' },
+    lixeirasTampadas: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Lixeiras Fechadas e Higienizadas', desc: 'As lixeiras estão com tampa, acionamento por pedal funcionando e limpas por fora?' },
+    areaResiduos: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Organização do Abrigo de Resíduos', desc: 'A área de expurgo e armazenamento de lixo está limpa, organizada e sem odores fortes?' },
+    equipamentosMateriais: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Condição de Equipamentos e Materiais', desc: 'Carrinhos, baldes, rodos e mops estão limpos, secos e em bom estado de conservação?' },
+    produtosIdentificados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Identificação de Produtos Químicos', desc: 'Os produtos de limpeza estão em suas embalagens originais ou frascos devidamente rotulados?' },
+    responsavelTurno: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Responsável pelo Turno Presente', desc: 'Há um líder ou responsável pela equipe de limpeza claramente definido e acompanhando?' },
+    problemasTratados: { status: '', reason: '', photo: null, trigger: 'Não', label: 'Feedback e Correção Imediata', desc: 'As inconformidades apontadas na vistoria foram corrigidas e a equipe orientada na hora?' }
   });
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export default function App() {
 
   const updateMeta = (field, value) => setMeta(prev => ({ ...prev, [field]: value }));
   const updateResponse = (id, key, value) => setResponses(prev => ({ ...prev, [id]: { ...prev[id], [key]: value } }));
+  
   const handlePhoto = (id, e) => {
     const file = e.target.files[0];
     if (file) {
@@ -143,7 +145,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- O NOVO COMANDO NATIVO, INFALÍVEL E SEM TRAVAMENTOS ---
   const gerarPDFNativo = () => {
     window.print();
   };
@@ -168,8 +169,9 @@ export default function App() {
               <input type="text" placeholder="Nome da Encarregada" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" value={meta.encarregada} onChange={(e) => updateMeta('encarregada', e.target.value)} required />
             </section>
 
+            {/* AQUI AS DESCRIÇÕES (desc) SÃO PASSADAS PARA O COMPONENTE */}
             {Object.entries(responses).map(([id, data]) => (
-              <QuestionBlock key={id} id={id} label={data.label} responses={responses} updateResponse={updateResponse} handlePhoto={handlePhoto} />
+              <QuestionBlock key={id} id={id} label={data.label} desc={data.desc} responses={responses} updateResponse={updateResponse} handlePhoto={handlePhoto} />
             ))}
 
             <section className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl space-y-6 mb-10 border-t-4 border-teal-500 text-white">
@@ -227,7 +229,8 @@ export default function App() {
                 <div key={key} className="p-6 rounded-[2rem] border-2 border-[#fee2e2]" style={{ backgroundColor: '#fef2f2' }}>
                   <span className="font-black text-[#334155] text-xs uppercase block mb-3">{data.label}</span>
                   <div className="bg-[#ffffff] p-4 rounded-2xl border border-[#fca5a5] mb-4 text-sm text-[#475569] font-medium italic" style={{ backgroundColor: '#ffffff' }}>"{data.reason || 'Sem justificativa.'}"</div>
-                  {data.photo && <img src={data.photo} className="rounded-2xl w-full h-auto object-cover border border-[#fca5a5]" alt="Evidência" />}
+                  {/* FOTO LIMITADA AQUI: max-h-48 (no máximo 192 pixels de altura) */}
+                  {data.photo && <img src={data.photo} className="rounded-xl mt-3 w-full max-h-48 object-cover border border-[#fca5a5]" alt="Evidência" />}
                 </div>
               ))}
             </div>
@@ -249,7 +252,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* --- BOTÕES NO RODAPÉ --- Note o "print:hidden" que esconde isso na hora de salvar o PDF */}
+      {/* BOTÕES NO RODAPÉ (com print:hidden para não saírem no PDF) */}
       <div className="print:hidden fixed bottom-0 left-0 right-0 bg-slate-100 border-t border-slate-200 p-4 z-50 flex justify-center gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
         <button onClick={gerarPDFNativo} className="flex-1 max-w-[160px] bg-slate-900 text-white py-4 px-2 rounded-2xl font-bold uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 active:scale-95">
           <Printer size={16} /> Salvar PDF
