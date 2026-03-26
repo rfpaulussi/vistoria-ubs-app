@@ -90,10 +90,11 @@ export default function App() {
   const finalizar = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
     const falhas = Object.values(responses).filter(r => r.status === r.trigger).map(r => `${r.label}: ${r.reason}`).join(' | ');
     const dadosParaSalvar = { ...meta, dataFinalizacao: new Date().toLocaleString('pt-BR'), falhas };
 
-    // 1. Google Sheets
+    // 1. Google Sheets (Espera terminar)
     try {
       await fetch(GOOGLE_SHEETS_URL, {
         method: 'POST',
@@ -103,19 +104,21 @@ export default function App() {
       });
     } catch (err) { console.error("Sheets Error:", err); }
 
-    // 2. Firebase
+    // 2. Firebase (Não trava mais a tela se der erro de permissão no Firebase)
     if (isFirebaseReady) {
-      try { await addDoc(collection(db, 'vistorias'), { ...dadosParaSalvar, createdAt: serverTimestamp() }); }
-      catch (err) { console.error("Firebase Error:", err); }
+      addDoc(collection(db, 'vistorias'), { ...dadosParaSalvar, createdAt: serverTimestamp() })
+        .catch(err => console.error("Firebase Permissão Negada (Ignorado):", err));
     }
 
+    // Libera a tela imediatamente para o Relatório!
     setLoading(false);
     setView('report');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const compartilharWhatsApp = () => {
     const falhasTxt = Object.values(responses).filter(r => r.status === r.trigger).map(r => `• ${r.label}: ${r.reason}`).join('\n');
-    const texto = `🚨 *VISTORIA: ${meta.ubs.toUpperCase()}*\n👤 Encarregada: ${meta.encarregada}\n⭐ Nota: *${meta.notaVistoria}/10*\n\n⚠️ *FALHAS:*\n${falhasTxt || 'Nenhuma falha registrada.'}`;
+    const texto = `🚨 *VISTORIA: ${meta.ubs.toUpperCase()}*\n👤 Encarregada: ${meta.encarregada}\n⭐ Nota: *${meta.notaVistoria}/10*\n📅 Retorno: ${meta.dataRetorno ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR') : 'A definir'}\n\n⚠️ *FALHAS:*\n${falhasTxt || 'Nenhuma falha registrada.'}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
   };
 
@@ -137,21 +140,34 @@ export default function App() {
               <QuestionBlock key={id} id={id} label={d.label} responses={responses} updateResponse={updateResponse} handlePhoto={handlePhoto} />
             ))}
 
-            <div className="bg-slate-900 p-8 rounded-[3rem] text-white space-y-6 shadow-2xl mb-10 border-t-4 border-teal-500">
+            <section className="bg-slate-900 p-8 rounded-[3rem] text-white space-y-6 shadow-2xl mb-10 border-t-4 border-teal-500">
               <h2 className="text-teal-400 font-black text-xs uppercase flex items-center"><Star size={16} className="mr-2" /> Avaliação Final</h2>
-              <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar flex-nowrap touch-pan-x">
-                {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
-                  <button key={n} type="button" onClick={() => updateMeta('notaVistoria', n)} 
-                    className={`flex-shrink-0 w-11 h-11 rounded-xl font-black text-sm transition-all ${meta.notaVistoria === n ? 'bg-teal-500 text-slate-900 scale-110 shadow-lg' : 'bg-slate-800 text-slate-500'}`}>
-                    {n}
-                  </button>
-                ))}
+              
+              {/* PROBLEMA 3 RESOLVIDO: NOTAS QUEBRANDO EM DUAS LINHAS ORGANIZADAS */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-3 text-center">Nota da Unidade (0 a 10)</label>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                    <button key={n} type="button" onClick={() => updateMeta('notaVistoria', n)} 
+                      className={`w-11 h-11 rounded-xl font-black text-sm transition-all ${meta.notaVistoria === n ? 'bg-teal-500 text-slate-900 scale-110 shadow-lg shadow-teal-500/50' : 'bg-slate-800 text-slate-500'}`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <textarea rows="4" className="w-full bg-slate-800 rounded-2xl p-4 text-sm outline-none" placeholder="Considerações gerais..." value={meta.consideracoesGerais} onChange={(e) => updateMeta('consideracoesGerais', e.target.value)} />
-              <button type="submit" disabled={loading} className="w-full bg-teal-500 text-slate-900 font-black py-5 rounded-2xl active:scale-95 disabled:opacity-50 flex justify-center items-center transition-all">
+
+              {/* PROBLEMA 2 RESOLVIDO: DATA DE RETORNO VOLTOU! */}
+              <div className="mt-6 border-t border-slate-700 pt-6">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Previsão de Retorno (Opcional)</label>
+                <input type="date" className="w-full bg-slate-800 border-none rounded-xl p-3 text-white text-xs outline-none focus:ring-1 focus:ring-teal-500" value={meta.dataRetorno} onChange={(e) => updateMeta('dataRetorno', e.target.value)} />
+              </div>
+
+              <textarea rows="4" className="w-full bg-slate-800 rounded-2xl p-4 text-sm outline-none mt-4" placeholder="Considerações gerais..." value={meta.consideracoesGerais} onChange={(e) => updateMeta('consideracoesGerais', e.target.value)} />
+              
+              <button type="submit" disabled={loading} className="w-full bg-teal-500 text-slate-900 font-black py-5 rounded-2xl active:scale-95 disabled:opacity-50 flex justify-center items-center transition-all mt-6">
                 {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="mr-2" />} FINALIZAR E SALVAR
               </button>
-            </div>
+            </section>
           </form>
         </main>
       </div>
@@ -161,10 +177,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
        <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 shadow-lg"><Send size={40} /></div>
-       <h1 className="text-2xl font-black text-slate-900 uppercase">Relatório Enviado!</h1>
-       <p className="text-slate-500 mt-2 mb-8">Dados registrados no banco e na sua planilha.</p>
+       <h1 className="text-2xl font-black text-slate-900 uppercase">Relatório Gerado!</h1>
+       <p className="text-slate-500 mt-2 mb-8">Dados salvos com sucesso na planilha.</p>
        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button onClick={compartilharWhatsApp} className="bg-green-600 text-white py-4 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-xl active:scale-95"><MessageSquare size={18} /> WhatsApp</button>
+          <button onClick={compartilharWhatsApp} className="bg-green-600 text-white py-4 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-xl active:scale-95"><MessageSquare size={18} /> Ver / Enviar Relatório</button>
           <button onClick={() => window.location.reload()} className="bg-slate-900 text-white py-4 rounded-2xl font-bold uppercase text-xs shadow-xl active:scale-95">Nova Vistoria</button>
        </div>
     </div>
