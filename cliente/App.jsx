@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { 
-  Camera, Calendar, MapPin, ClipboardList, Send, 
-  CheckCircle2, Users, HardHat, Package, AlertTriangle,
-  Trash2, Sparkles, Clock, XCircle, FileText, Download,
-  Share2, ArrowLeft, Eye, MessageSquare, Star, UserCheck,
-  Loader2, ThumbsUp, LayoutDashboard, History, ShieldCheck
+  Camera, Clock, Star, LayoutDashboard, ArrowLeft, MessageSquare, Loader2, Share2, Users, FileText, Download, Send
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -45,7 +41,7 @@ const QuestionBlock = ({ label, id, icon: Icon, desc, responses, updateResponse,
   return (
     <div className={`mb-6 p-5 rounded-2xl border transition-all ${isTriggered ? 'bg-red-50 border-red-200 shadow-sm' : 'bg-white border-slate-100 shadow-sm'}`}>
       <div className="flex items-start mb-3">
-        {Icon && <Icon size={20} className={`mr-3 mt-1 ${isTriggered ? 'text-red-600' : 'text-teal-600'}`} />}
+        {Icon ? <Icon size={20} className={`mr-3 mt-1 ${isTriggered ? 'text-red-600' : 'text-teal-600'}`} /> : <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${isTriggered ? 'bg-red-500' : 'bg-teal-500'}`} />}
         <div>
           <label className="text-sm font-bold text-slate-800 leading-tight block">{label}</label>
           {desc && <p className="text-[11px] text-slate-400 mt-1 italic">{desc}</p>}
@@ -109,10 +105,8 @@ export default function App() {
   const [meta, setMeta] = useState({
     ubs: '',
     encarregada: '',
-    responsavelPrefeitura: '',
     dataVistoria: new Date().toISOString().split('T')[0],
     horaInicio: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    horaFim: '',
     dataRetorno: '',
     consideracoesGerais: '',
     notaVistoria: 10
@@ -139,11 +133,8 @@ export default function App() {
   useEffect(() => {
     if (!isConfigValid) return;
     const initAuth = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (e) {
-        console.error("Erro na autenticação", e);
-      }
+      try { await signInAnonymously(auth); } 
+      catch (e) { console.error("Erro na autenticação", e); }
     };
     initAuth();
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -187,7 +178,6 @@ export default function App() {
 
     const dadosFinais = { ...meta, horaFim, dataFinalizacao: new Date().toLocaleString('pt-BR'), falhas: falhasTexto };
     
-    // 1. Enviar para o Google Sheets
     try {
       await fetch(GOOGLE_SHEETS_URL, {
         method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
@@ -195,13 +185,9 @@ export default function App() {
       });
     } catch (err) { console.error("Sheets Error:", err); }
 
-    // 2. Enviar para o Firebase
     if (isConfigValid && db) {
-      addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vistorias'), {
-        ...dadosFinais,
-        responses,
-        uid: user?.uid || 'anonimo',
-        createdAt: serverTimestamp()
+      addDoc(collection(db, 'vistorias'), {
+        ...dadosFinais, responses, uid: user?.uid || 'anonimo', createdAt: serverTimestamp()
       }).catch(err => console.error(err));
     }
     
@@ -213,21 +199,36 @@ export default function App() {
   const baixarPDF = async () => {
     setGerandoPdf(true);
     try {
+      // 1. Rola para o topo (MUITO IMPORTANTE PARA O PDF NÃO SAIR CORTADO)
+      window.scrollTo(0, 0);
+      
+      // 2. Aguarda um pouquinho para a tela carregar o topo antes de "bater a foto"
+      await new Promise(resolve => setTimeout(resolve, 800));
+
       const elemento = document.getElementById('relatorio-pdf');
-      const canvas = await html2canvas(elemento, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
+      
+      // 3. Scale 1 para não sobrecarregar a memória do celular
+      const canvas = await html2canvas(elemento, { 
+        scale: 1, 
+        useCORS: true,
+        allowTaint: true
+      });
+      
+      // 4. Salva em JPEG (muito mais leve que PNG)
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
       
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Vistoria_${meta.ubs || 'UBS'}.pdf`);
     } catch (erro) {
       console.error("Erro ao gerar PDF:", erro);
-      alert("Erro ao gerar o PDF. Tente novamente.");
+      alert("Falha ao gerar PDF: " + (erro.message || erro));
+    } finally {
+      setGerandoPdf(false);
     }
-    setGerandoPdf(false);
   };
 
   const compartilharWhatsApp = () => {
@@ -249,11 +250,6 @@ export default function App() {
   if (view === 'form') {
     return (
       <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900">
-        {!isConfigValid && (
-          <div className="bg-yellow-100 p-2 text-[10px] text-center font-bold text-yellow-800">
-            MODO OFFLINE (Sem Firebase)
-          </div>
-        )}
         <header className="bg-teal-700 text-white p-5 rounded-b-[2.5rem] shadow-xl sticky top-0 z-50 flex justify-between items-center">
           <div>
             <h1 className="text-lg font-black uppercase tracking-tight leading-none">Vistoria Campo</h1>
@@ -275,9 +271,7 @@ export default function App() {
             </section>
 
             {Object.entries(responses).map(([id, data]) => (
-              <QuestionBlock 
-                key={id} id={id} label={data.label} responses={responses} updateResponse={updateResponse} handlePhoto={handlePhoto} 
-              />
+              <QuestionBlock key={id} id={id} label={data.label} responses={responses} updateResponse={updateResponse} handlePhoto={handlePhoto} />
             ))}
 
             <section className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl space-y-6 mb-10 border-t-4 border-teal-500 text-white">
@@ -300,8 +294,7 @@ export default function App() {
               <textarea rows="4" className="w-full bg-slate-800 rounded-2xl p-4 text-sm outline-none focus:ring-1 focus:ring-teal-500" placeholder="Considerações gerais..." value={meta.consideracoesGerais} onChange={(e) => updateMeta('consideracoesGerais', e.target.value)} />
 
               <button type="submit" disabled={loading} className="w-full bg-teal-500 text-slate-900 font-black py-5 rounded-2xl shadow-xl active:scale-95 disabled:opacity-50 flex justify-center items-center transition-all">
-                {loading ? <Loader2 className="animate-spin mr-2" /> : <Send size={20} className="mr-2" />}
-                FINALIZAR E SALVAR
+                {loading ? <Loader2 className="animate-spin mr-2" /> : <Send size={20} className="mr-2" />} FINALIZAR E SALVAR
               </button>
             </section>
           </form>
@@ -346,10 +339,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 pb-40 font-sans text-slate-900">
       
-      {/* --- ESTA É A ÁREA QUE SAI NO PDF --- */}
+      {/* --- ÁREA QUE SAI NO PDF --- */}
       <div id="relatorio-pdf" className="bg-white max-w-2xl mx-auto p-8 min-h-screen">
         <div className="text-center mb-8 border-b-2 border-slate-100 pb-8">
-          <h1 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Relatório Oficial de Vistoria</h1>
+          <h1 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Relatório de Vistoria</h1>
           <h2 className="text-4xl font-black uppercase text-slate-900 leading-none">{meta.ubs || 'Unidade não informada'}</h2>
           <div className="mt-4 flex flex-col items-center gap-1 text-sm font-bold text-slate-500 uppercase">
             <span className="flex items-center"><Users size={14} className="mr-2" /> Encarregada: {meta.encarregada || 'Não informada'}</span>
@@ -394,7 +387,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* --- BOTÕES NO RODAPÉ (NÃO SAEM NO PDF) --- */}
+      {/* --- BOTÕES NO RODAPÉ --- */}
       <div className="fixed bottom-0 left-0 right-0 bg-slate-100 border-t border-slate-200 p-4 z-50 flex justify-center gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
         <button onClick={baixarPDF} disabled={gerandoPdf} className="flex-1 max-w-[160px] bg-slate-900 text-white py-4 px-2 rounded-2xl font-bold uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
           {gerandoPdf ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />} 
