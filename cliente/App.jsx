@@ -147,35 +147,50 @@ export default function App() {
   };
 
   const baixarPDF = async () => {
-    setGerandoPdf(true);
-    try {
-      window.scrollTo(0, 0); // Vai para o topo para evitar cortes
-      await new Promise(resolve => setTimeout(resolve, 800)); // Dá tempo pro celular renderizar
-      
-      const elemento = document.getElementById('relatorio-pdf');
-      
-      // Captura a tela (usando scale 1 para não travar a memória de celulares fracos)
-      const canvas = await html2canvas(elemento, { 
-        scale: 1, 
-        useCORS: true, 
-        allowTaint: true 
-      });
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Vistoria_${meta.ubs || 'UBS'}.pdf`);
-      
-    } catch (erro) {
-      console.error("Erro PDF:", erro);
-      alert("Falha ao gerar o PDF. Erro Técnico: " + (erro.message || erro));
-    } finally {
-      setGerandoPdf(false);
-    }
-  };
+  setGerandoPdf(true);
+
+  try {
+    window.scrollTo(0, 0);
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const elemento = document.getElementById('relatorio-pdf');
+
+    const canvas = await html2canvas(elemento, {
+      scale: 1,
+      useCORS: true,
+      allowTaint: true,
+
+      // 🔥 CORREÇÃO PRINCIPAL AQUI
+      onclone: (doc) => {
+        const all = doc.querySelectorAll("*");
+
+        all.forEach((el) => {
+          const style = window.getComputedStyle(el);
+
+          // força conversão para RGB (remove oklch)
+          el.style.color = style.color;
+          el.style.backgroundColor = style.backgroundColor;
+          el.style.borderColor = style.borderColor;
+        });
+      }
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.8);
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Vistoria_${meta.ubs || 'UBS'}.pdf`);
+
+  } catch (erro) {
+    console.error("Erro PDF:", erro);
+    alert("Falha ao gerar o PDF. Erro Técnico: " + (erro.message || erro));
+  } finally {
+    setGerandoPdf(false);
+  }
+};
 
   const compartilharWhatsApp = () => {
     const falhas = Object.entries(responses).filter(([_, data]) => data.status === data.trigger).map(([_, data]) => `• ${data.label}: ${data.reason}`).join('\n');
