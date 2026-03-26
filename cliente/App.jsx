@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
-  Camera, Send, Clock, Star, LayoutDashboard, ArrowLeft, MessageSquare, Loader2, Share2, Users
+  Camera, Send, Clock, Star, ArrowLeft, MessageSquare, Loader2, Users, Download, FileText
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 // --- CONFIGURAÇÕES ---
 const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxDLjQ75Ice_nl7M0y6GuCJCv-_4FEk4Bw392mq3T74Kw5JKIi1zZAMOiZmhFT8JMMoLA/exec"; 
@@ -18,7 +20,6 @@ const firebaseConfig = {
   appId: "1:123456789:web:abcdef"
 };
 
-// Inicialização segura
 let app, auth, db;
 const isFirebaseReady = firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_SUA_API_KEY_AQUI";
 if (isFirebaseReady) {
@@ -29,7 +30,6 @@ if (isFirebaseReady) {
   } catch (e) { console.error("Erro Firebase Init:", e); }
 }
 
-// --- COMPONENTE DE PERGUNTA ---
 const QuestionBlock = ({ label, id, responses, updateResponse, handlePhoto }) => {
   const item = responses[id];
   const isTriggered = item.status === item.trigger;
@@ -63,6 +63,7 @@ const QuestionBlock = ({ label, id, responses, updateResponse, handlePhoto }) =>
 export default function App() {
   const [view, setView] = useState('form');
   const [loading, setLoading] = useState(false);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
   const [meta, setMeta] = useState({ ubs: '', encarregada: '', dataVistoria: new Date().toISOString().split('T')[0], horaInicio: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), notaVistoria: 10, consideracoesGerais: '', dataRetorno: '' });
   
   const [responses, setResponses] = useState({
@@ -94,26 +95,41 @@ export default function App() {
     const falhas = Object.values(responses).filter(r => r.status === r.trigger).map(r => `${r.label}: ${r.reason}`).join(' | ');
     const dadosParaSalvar = { ...meta, dataFinalizacao: new Date().toLocaleString('pt-BR'), falhas };
 
-    // 1. Google Sheets (Espera terminar)
     try {
       await fetch(GOOGLE_SHEETS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dadosParaSalvar)
       });
     } catch (err) { console.error("Sheets Error:", err); }
 
-    // 2. Firebase (Não trava mais a tela se der erro de permissão no Firebase)
     if (isFirebaseReady) {
       addDoc(collection(db, 'vistorias'), { ...dadosParaSalvar, createdAt: serverTimestamp() })
-        .catch(err => console.error("Firebase Permissão Negada (Ignorado):", err));
+        .catch(err => console.error(err));
     }
 
-    // Libera a tela imediatamente para o Relatório!
     setLoading(false);
     setView('report');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const baixarPDF = async () => {
+    setGerandoPdf(true);
+    try {
+      const elemento = document.getElementById('relatorio-pdf');
+      const canvas = await html2canvas(elemento, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Vistoria_${meta.ubs || 'UBS'}.pdf`);
+    } catch (erro) {
+      console.error("Erro ao gerar PDF:", erro);
+      alert("Erro ao gerar o PDF. Tente novamente.");
+    }
+    setGerandoPdf(false);
   };
 
   const compartilharWhatsApp = () => {
@@ -143,7 +159,6 @@ export default function App() {
             <section className="bg-slate-900 p-8 rounded-[3rem] text-white space-y-6 shadow-2xl mb-10 border-t-4 border-teal-500">
               <h2 className="text-teal-400 font-black text-xs uppercase flex items-center"><Star size={16} className="mr-2" /> Avaliação Final</h2>
               
-              {/* PROBLEMA 3 RESOLVIDO: NOTAS QUEBRANDO EM DUAS LINHAS ORGANIZADAS */}
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-3 text-center">Nota da Unidade (0 a 10)</label>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -156,7 +171,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* PROBLEMA 2 RESOLVIDO: DATA DE RETORNO VOLTOU! */}
               <div className="mt-6 border-t border-slate-700 pt-6">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Previsão de Retorno (Opcional)</label>
                 <input type="date" className="w-full bg-slate-800 border-none rounded-xl p-3 text-white text-xs outline-none focus:ring-1 focus:ring-teal-500" value={meta.dataRetorno} onChange={(e) => updateMeta('dataRetorno', e.target.value)} />
@@ -174,15 +188,73 @@ export default function App() {
     );
   }
 
+  // --- TELA DO RELATÓRIO VISUAL (USADA PARA O PDF) ---
+  const irregularidades = Object.entries(responses).filter(([_, data]) => data.status === data.trigger);
+
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
-       <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 shadow-lg"><Send size={40} /></div>
-       <h1 className="text-2xl font-black text-slate-900 uppercase">Relatório Gerado!</h1>
-       <p className="text-slate-500 mt-2 mb-8">Dados salvos com sucesso na planilha.</p>
-       <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button onClick={compartilharWhatsApp} className="bg-green-600 text-white py-4 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-xl active:scale-95"><MessageSquare size={18} /> Ver / Enviar Relatório</button>
-          <button onClick={() => window.location.reload()} className="bg-slate-900 text-white py-4 rounded-2xl font-bold uppercase text-xs shadow-xl active:scale-95">Nova Vistoria</button>
-       </div>
+    <div className="min-h-screen bg-slate-50 pb-40 font-sans text-slate-900">
+      
+      {/* Elemento que será transformado em PDF */}
+      <div id="relatorio-pdf" className="bg-white max-w-2xl mx-auto p-8 min-h-screen">
+        <div className="text-center mb-8 border-b-2 border-slate-100 pb-8">
+          <h1 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Relatório de Vistoria</h1>
+          <h2 className="text-4xl font-black uppercase text-slate-900 leading-none">{meta.ubs || 'Unidade não informada'}</h2>
+          <div className="mt-4 flex flex-col items-center gap-1 text-sm font-bold text-slate-500 uppercase">
+            <span className="flex items-center"><Users size={14} className="mr-2" /> Encarregada: {meta.encarregada || 'Não informada'}</span>
+            <span className="flex items-center"><Clock size={14} className="mr-2" /> {new Date().toLocaleDateString('pt-BR')}</span>
+          </div>
+        </div>
+
+        <div className="flex justify-center mb-10">
+          <div className="bg-slate-900 text-white p-6 rounded-[2.5rem] text-center min-w-[150px] shadow-2xl">
+            <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-1">Nota Final</p>
+            <span className="text-6xl font-black">{meta.notaVistoria}</span>
+          </div>
+        </div>
+
+        <section className="mb-12">
+          <h3 className="font-black text-xl border-l-8 border-red-500 pl-4 uppercase text-red-700 mb-6">Falhas Registradas</h3>
+          {irregularidades.length === 0 ? <div className="p-10 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold uppercase text-xs">Unidade 100% Conforme</div> : 
+            <div className="space-y-8">
+              {irregularidades.map(([key, data]) => (
+                <div key={key} className="p-6 rounded-[2rem] border-2 border-red-50 bg-red-50/20 shadow-sm">
+                  <span className="font-black text-slate-700 text-xs uppercase block mb-3">{data.label}</span>
+                  <div className="bg-white p-4 rounded-2xl border border-red-100 mb-4 text-sm text-slate-600 font-medium italic">"{data.reason || 'Sem justificativa.'}"</div>
+                  {data.photo && <img src={data.photo} className="rounded-3xl w-full h-64 object-cover shadow-md" alt="Evidência" />}
+                </div>
+              ))}
+            </div>
+          }
+        </section>
+
+        {meta.consideracoesGerais && (
+          <section className="mb-12 p-6 bg-slate-50 rounded-[2rem]">
+            <h3 className="font-black text-sm uppercase text-slate-700 mb-3 flex items-center"><FileText size={16} className="mr-2"/> Considerações Gerais</h3>
+            <p className="text-sm text-slate-600 italic">{meta.consideracoesGerais}</p>
+          </section>
+        )}
+
+        <div className="mt-10 border-t-2 border-slate-100 pt-10 text-center">
+           <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-2">Previsão de Retorno</p>
+           <p className="text-2xl font-black uppercase text-slate-800">
+             {meta.dataRetorno ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR') : 'A DEFINIR'}
+           </p>
+        </div>
+      </div>
+
+      {/* Botões de Ação (Estes não aparecem no PDF) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-50 flex flex-col sm:flex-row justify-center gap-3">
+        <button onClick={baixarPDF} disabled={gerandoPdf} className="flex-1 max-w-xs mx-auto bg-slate-900 text-white py-4 px-6 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-xl active:scale-95 disabled:opacity-50">
+          {gerandoPdf ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />} 
+          {gerandoPdf ? 'Gerando...' : 'Baixar PDF'}
+        </button>
+        <button onClick={compartilharWhatsApp} className="flex-1 max-w-xs mx-auto bg-green-600 text-white py-4 px-6 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-xl active:scale-95">
+          <MessageSquare size={18} /> WhatsApp
+        </button>
+        <button onClick={() => window.location.reload()} className="flex-1 max-w-xs mx-auto bg-slate-200 text-slate-700 py-4 px-6 rounded-2xl font-bold uppercase text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95">
+          <ArrowLeft size={18} /> Nova
+        </button>
+      </div>
     </div>
   );
 }
