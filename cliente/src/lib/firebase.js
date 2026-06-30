@@ -35,12 +35,10 @@ export function initFirebaseAuth(callback) {
 
 export async function salvarFirestore(dados) {
   if (!isValid || !db) return;
-  try {
-    await addDoc(collection(db, 'vistorias'), {
-      ...dados,
-      createdAt: serverTimestamp(),
-    });
-  } catch (e) {
-    console.error('Firestore write error:', e);
-  }
+  const timeout = new Promise(resolve => setTimeout(resolve, 5000));
+  const write = addDoc(collection(db, 'vistorias'), {
+    ...dados,
+    createdAt: serverTimestamp(),
+  }).catch(e => console.error('Firestore write error:', e));
+  await Promise.race([write, timeout]);
 }
