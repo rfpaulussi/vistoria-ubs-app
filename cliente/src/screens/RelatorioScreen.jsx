@@ -58,7 +58,7 @@ export default function RelatorioScreen() {
             return (
               <div
                 key={p.id}
-                className={`${p.critical ? 'col-span-2' : 'col-span-1'} rounded-2xl p-3 ${
+                className={`col-span-1 rounded-2xl p-3 ${
                   r.status === 'sim' ? 'bg-teal-700 text-white' :
                   r.status === 'nao' ? 'bg-red-700 text-white' :
                   'bg-slate-200 text-slate-600'

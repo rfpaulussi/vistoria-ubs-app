@@ -57,7 +57,7 @@ export default function BentoCard({
   return (
     <div
       className={`
-        ${critical ? 'col-span-2' : 'col-span-1'}
+        col-span-1
         rounded-2xl border-2 p-3 flex flex-col justify-between
         transition-all duration-200 active:scale-[0.97] select-none cursor-pointer
         ${STATUS_CARD[status]}
