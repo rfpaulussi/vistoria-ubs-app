@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { Camera } from 'lucide-react';
 
 const STATUS_CARD = {
   pending: 'bg-slate-100 border-slate-200',
@@ -70,11 +71,11 @@ export default function BentoCard({
       {/* Card header */}
       <div className="mb-2 flex-1">
         <div className="flex items-start justify-between gap-1 mb-1">
-          <p className={`text-[11px] font-black leading-tight uppercase ${isPending ? 'text-slate-700' : ''}`}>
+          <p className={`text-xs font-black leading-tight uppercase ${isPending ? 'text-slate-700' : ''}`}>
             {label}
           </p>
           <div className="flex gap-1 shrink-0 items-center">
-            {hasPhoto && <span className="text-[10px]">📷</span>}
+            {hasPhoto && <span className="text-xs">📷</span>}
             {STATUS_ICON[status] && (
               <span className="text-base leading-none">{STATUS_ICON[status]}</span>
             )}
@@ -83,9 +84,7 @@ export default function BentoCard({
             )}
           </div>
         </div>
-        {isPending && (
-          <p className="text-[10px] text-slate-400 leading-tight">{desc}</p>
-        )}
+        <p className={`text-[11px] leading-tight ${isPending ? 'text-slate-400' : 'text-white/70'}`}>{desc}</p>
       </div>
 
       {/* Answer buttons */}
@@ -100,17 +99,31 @@ export default function BentoCard({
         ))}
       </div>
 
-      {/* Inline justificativa when Não */}
+      {/* Inline justificativa + câmera when Não */}
       {status === 'nao' && (
-        <textarea
-          className="mt-2 w-full bg-white/20 text-white placeholder-white/50 text-[11px] rounded-lg p-2 resize-none outline-none border border-white/20"
-          rows={2}
-          placeholder="Justificativa (opcional)..."
-          value={reason}
-          onPointerDown={e => e.stopPropagation()}
-          onClick={e => e.stopPropagation()}
-          onChange={e => { e.stopPropagation(); onReasonChange(id, e.target.value); }}
-        />
+        <div className="mt-2 space-y-1.5">
+          <textarea
+            className="w-full bg-white/20 text-white placeholder-white/50 text-[11px] rounded-lg p-2 resize-none outline-none border border-white/20"
+            rows={2}
+            placeholder="Justificativa (opcional)..."
+            value={reason}
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
+            onChange={e => { e.stopPropagation(); onReasonChange(id, e.target.value); }}
+          />
+          <button
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onLongPress(id); }}
+            className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border text-[10px] font-black uppercase transition-all active:scale-95 ${
+              hasPhoto
+                ? 'bg-white/30 border-white/40 text-white'
+                : 'bg-white/10 border-white/20 text-white/70'
+            }`}
+          >
+            <Camera size={12} />
+            {hasPhoto ? '📷 Foto registrada — alterar' : 'Tirar foto de evidência'}
+          </button>
+        </div>
       )}
     </div>
   );

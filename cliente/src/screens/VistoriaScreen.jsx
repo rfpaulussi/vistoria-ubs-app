@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Send, Loader2 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, UBS_LIST } from '../context/AppContext';
 import BentoCard from '../components/BentoCard';
 import CardModal from '../components/CardModal';
 import { salvarVistoria } from '../lib/sheets';
@@ -45,13 +45,14 @@ export default function VistoriaScreen() {
       {/* Identification inputs */}
       <div className="px-3 pt-3 pb-2 bg-white border-b border-slate-100 shadow-sm">
         <div className="grid grid-cols-2 gap-2">
-          <input
-            type="text"
-            placeholder="Unidade UBS *"
-            className="col-span-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-teal-400"
+          <select
+            className="col-span-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-teal-400 text-slate-700"
             value={meta.ubs}
             onChange={e => updateMeta('ubs', e.target.value)}
-          />
+          >
+            <option value="">Unidade UBS *</option>
+            {UBS_LIST.map(u => <option key={u} value={u}>{u}</option>)}
+          </select>
           <input
             type="text"
             placeholder="Encarregada *"

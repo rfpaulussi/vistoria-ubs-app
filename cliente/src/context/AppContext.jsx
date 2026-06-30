@@ -1,21 +1,32 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+export const UBS_LIST = [
+  'UBS PONTE GRANDE', 'UBS BRAZ CUBAS', 'UBS VILA SUISSA', 'CECCO',
+  'UBS BOTUJURU', 'UBS VILA MORAES', 'UBS VILA JUNDIAÍ', 'ZOONOZES',
+  'UBS JARDIM CAMILA', 'UBS JARDIM IVETE', 'UBS SANTA TERESA', 'EMESP',
+  'UBS MINERAÇÃO', 'UBS JUNDIAPEBA', 'CURE/CEADIM', 'CAPS INFANTIL/CIAS',
+  'CAPS 2', 'UBS SABAUNA', 'UAPS 1', 'UAPS 2',
+  'SECRETARIA DE SAÚDE', 'PROMEG', 'PRÓ HIPER', 'ALMOXARIFADO SAÚDE',
+  'PRÓ MULHER', 'UBS SANTO ÂNGELO', 'UBS VILA APARECIDA', 'CENTRO POP',
+  'UBS VILA DA PRATA', 'UBS VILA NATAL',
+];
+
 export const PERGUNTAS = [
-  { id: 'uniformeEquipe',      label: 'Equipe Uniformizada',    desc: 'Uniforme completo e crachá visível?',                     trigger: 'nao', critical: false },
-  { id: 'usoEpi',              label: 'Uso de EPIs',            desc: 'Luvas, botas, óculos adequados para atividade?',          trigger: 'nao', critical: true  },
-  { id: 'ambienteGeral',       label: 'Limpeza Geral',          desc: 'Pisos, paredes e corredores limpos?',                     trigger: 'nao', critical: false },
-  { id: 'sujeiraDerramamento', label: 'Sujeira/Derramamentos',  desc: 'Limpeza imediata de derramamentos recentes?',             trigger: 'nao', critical: false },
-  { id: 'altoToque',           label: 'Superfícies Alto Toque', desc: 'Maçanetas, corrimãos e balcões higienizados?',            trigger: 'nao', critical: false },
-  { id: 'padraoLimpeza',       label: 'Padrão Técnico',         desc: 'Fluxo correto: menos → mais contaminado, cima → baixo?',  trigger: 'nao', critical: true  },
-  { id: 'cronogramaLimpeza',   label: 'Cronograma',             desc: 'Rotinas diárias e terminal em dia?',                     trigger: 'nao', critical: false },
-  { id: 'materiaOrganica',     label: 'Matéria Orgânica',       desc: 'Fluidos sem isolamento/desinfecção encontrados?',         trigger: 'sim', critical: true  },
-  { id: 'residuosSegregados',  label: 'Segregação de Resíduos', desc: 'Infectante, comum e perfurocortante separados?',          trigger: 'nao', critical: true  },
-  { id: 'lixeirasTampadas',    label: 'Lixeiras',               desc: 'Tampa, pedal e limpeza externa ok?',                     trigger: 'nao', critical: false },
-  { id: 'areaResiduos',        label: 'Abrigo de Resíduos',     desc: 'Expurgo limpo, organizado, sem odores?',                 trigger: 'nao', critical: false },
-  { id: 'equipamentosMateriais', label: 'Equipamentos',         desc: 'Carrinhos, baldes, mops limpos e conservados?',          trigger: 'nao', critical: false },
-  { id: 'produtosIdentificados', label: 'Produtos Químicos',    desc: 'Embalagens originais ou frascos rotulados?',             trigger: 'nao', critical: false },
-  { id: 'responsavelTurno',    label: 'Responsável de Turno',   desc: 'Líder da equipe presente e acompanhando?',               trigger: 'nao', critical: false },
-  { id: 'problemasTratados',   label: 'Correção Imediata',      desc: 'Inconformidades corrigidas e equipe orientada?',         trigger: 'nao', critical: false },
+  { id: 'uniformeEquipe',      label: 'Equipe Uniformizada e Identificada',  desc: 'Todos os colaboradores estão utilizando uniforme completo e crachá visível?',                                                trigger: 'nao', critical: false },
+  { id: 'usoEpi',              label: 'Uso Correto de EPIs',                  desc: 'A equipe está utilizando EPIs (luvas, botas, óculos) adequados para a atividade atual?',                                     trigger: 'nao', critical: true  },
+  { id: 'ambienteGeral',       label: 'Limpeza do Ambiente Geral',            desc: 'Pisos, paredes, tetos e corredores estão limpos e livres de sujidades visíveis?',                                           trigger: 'nao', critical: false },
+  { id: 'sujeiraDerramamento', label: 'Tratamento de Sujeira e Derramamentos', desc: 'Houve limpeza imediata e adequada de derramamentos recentes ou sujidades pontuais?',                                       trigger: 'nao', critical: false },
+  { id: 'altoToque',           label: 'Superfícies de Alto Toque',            desc: 'Maçanetas, interruptores, corrimãos e balcões foram higienizados corretamente?',                                            trigger: 'nao', critical: false },
+  { id: 'padraoLimpeza',       label: 'Padrão Técnico de Limpeza',            desc: 'A limpeza está seguindo o fluxo correto (do menos para o mais contaminado, de cima para baixo)?',                          trigger: 'nao', critical: true  },
+  { id: 'cronogramaLimpeza',   label: 'Cumprimento do Cronograma',            desc: 'As rotinas diárias e os cronogramas de limpeza terminal estão em dia e preenchidos?',                                       trigger: 'nao', critical: false },
+  { id: 'materiaOrganica',     label: 'Presença de Matéria Orgânica',         desc: 'Foi encontrada matéria orgânica (sangue, fluidos) sem o devido isolamento e desinfecção?',                                  trigger: 'sim', critical: true  },
+  { id: 'residuosSegregados',  label: 'Segregação de Resíduos',               desc: 'O lixo infectante, comum e perfurocortante estão separados e acondicionados corretamente?',                                 trigger: 'nao', critical: true  },
+  { id: 'lixeirasTampadas',    label: 'Lixeiras Fechadas e Higienizadas',     desc: 'As lixeiras estão com tampa, acionamento por pedal funcionando e limpas por fora?',                                         trigger: 'nao', critical: false },
+  { id: 'areaResiduos',        label: 'Organização do Abrigo de Resíduos',    desc: 'A área de expurgo e armazenamento de lixo está limpa, organizada e sem odores fortes?',                                    trigger: 'nao', critical: false },
+  { id: 'equipamentosMateriais', label: 'Condição de Equipamentos e Materiais', desc: 'Carrinhos, baldes, rodos e mops estão limpos, secos e em bom estado de conservação?',                                    trigger: 'nao', critical: false },
+  { id: 'produtosIdentificados', label: 'Identificação de Produtos Químicos', desc: 'Os produtos de limpeza estão em suas embalagens originais ou frascos devidamente rotulados?',                              trigger: 'nao', critical: false },
+  { id: 'responsavelTurno',    label: 'Responsável pelo Turno Presente',      desc: 'Há um líder ou responsável pela equipe de limpeza claramente definido e acompanhando?',                                     trigger: 'nao', critical: false },
+  { id: 'problemasTratados',   label: 'Feedback e Correção Imediata',         desc: 'As inconformidades apontadas na vistoria foram corrigidas e a equipe orientada na hora?',                                   trigger: 'nao', critical: false },
 ];
 
 const makeInitialRespostas = () =>
