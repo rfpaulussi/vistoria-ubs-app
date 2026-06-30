@@ -1,6 +1,6 @@
 const SHEETS_URL =
   import.meta.env.VITE_SHEETS_URL ||
-  'https://script.google.com/macros/s/AKfycbxDLjQ75Ice_nl7M0y6GuCJCv-_4FEk4Bw392mq3T74Kw5JKIi1zZAMOiZmhFT8JMMoLA/exec';
+  'https://script.google.com/macros/s/AKfycbxcWgZYPth-jCXpkRxicBEGr2JKj21rdU-uuSYQNfBdCva1vqj1iH8qPdbbVxcZhKfcEQ/exec';
 
 export async function salvarVistoria(dados) {
   try {
