@@ -1,5 +1,25 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
+export const CAMPANHAS = [
+  { mes: 0,  nome: 'Janeiro Branco',    cor: '#64748b', corText: '#fff', emoji: '🤍', desc: 'Saúde Mental e Bem-Estar' },
+  { mes: 1,  nome: 'Fevereiro Laranja', cor: '#ea580c', corText: '#fff', emoji: '🧡', desc: 'Leucemia e Alzheimer' },
+  { mes: 2,  nome: 'Março Lilás',       cor: '#9333ea', corText: '#fff', emoji: '💜', desc: 'Prevenção do Câncer de Colo do Útero' },
+  { mes: 3,  nome: 'Abril Azul',        cor: '#2563eb', corText: '#fff', emoji: '💙', desc: 'Combate à Hipertensão Arterial' },
+  { mes: 4,  nome: 'Maio Amarelo',      cor: '#ca8a04', corText: '#fff', emoji: '💛', desc: 'Segurança no Trânsito' },
+  { mes: 5,  nome: 'Junho Vermelho',    cor: '#dc2626', corText: '#fff', emoji: '❤️', desc: 'Doação de Sangue' },
+  { mes: 6,  nome: 'Julho Amarelo',     cor: '#d97706', corText: '#fff', emoji: '💛', desc: 'Prevenção das Hepatites Virais' },
+  { mes: 7,  nome: 'Agosto Dourado',    cor: '#b45309', corText: '#fff', emoji: '🌟', desc: 'Aleitamento Materno' },
+  { mes: 8,  nome: 'Setembro Amarelo',  cor: '#eab308', corText: '#1e293b', emoji: '💛', desc: 'Prevenção ao Suicídio' },
+  { mes: 9,  nome: 'Outubro Rosa',      cor: '#db2777', corText: '#fff', emoji: '🩷', desc: 'Prevenção do Câncer de Mama' },
+  { mes: 10, nome: 'Novembro Azul',     cor: '#1d4ed8', corText: '#fff', emoji: '💙', desc: 'Saúde do Homem' },
+  { mes: 11, nome: 'Dezembro Vermelho', cor: '#b91c1c', corText: '#fff', emoji: '❤️', desc: 'Prevenção do HIV/AIDS' },
+];
+
+export const campanhaAtual = () => {
+  const mes = new Date().getMonth();
+  return CAMPANHAS[mes];
+};
+
 export const UBS_LIST = [
   'UBS PONTE GRANDE', 'UBS BRAZ CUBAS', 'UBS VILA SUISSA', 'CECCO',
   'UBS BOTUJURU', 'UBS VILA MORAES', 'UBS VILA JUNDIAÍ', 'ZOONOZES',

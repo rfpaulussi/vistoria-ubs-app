@@ -1,6 +1,8 @@
 import React from 'react';
 import { ClipboardList, History, CalendarDays, BarChart2 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, campanhaAtual } from '../context/AppContext';
+
+const campanha = campanhaAtual();
 
 const NAV_ITEMS = [
   { screen: 'vistoria',     icon: ClipboardList, label: 'Vistoria'  },
@@ -27,9 +29,8 @@ export default function BottomNav() {
         <button
           key={s}
           onClick={() => handleNav(s)}
-          className={`flex-1 py-3 flex flex-col items-center gap-0.5 transition-colors ${
-            screen === s ? 'text-teal-700' : 'text-slate-400'
-          }`}
+          className="flex-1 py-3 flex flex-col items-center gap-0.5 transition-colors text-slate-400"
+          style={screen === s ? { color: campanha.cor } : {}}
         >
           <Icon size={20} />
           <span className="text-[9px] font-black uppercase">{label}</span>

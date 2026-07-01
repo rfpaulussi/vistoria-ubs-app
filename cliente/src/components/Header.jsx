@@ -1,6 +1,8 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, campanhaAtual } from '../context/AppContext';
+
+const campanha = campanhaAtual();
 
 function formatTimer(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -22,7 +24,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-teal-700 text-white sticky top-0 z-50 shadow-lg">
+    <header className="text-white sticky top-0 z-50 shadow-lg" style={{ backgroundColor: campanha.cor, color: campanha.corText }}>
       <div className="flex items-center justify-between px-4 py-2">
         {!isVistoria ? (
           <>
@@ -52,11 +54,8 @@ export default function Header() {
         )}
       </div>
       {isVistoria && (
-        <div className="h-1 bg-teal-900">
-          <div
-            className="h-full bg-teal-300 transition-all duration-500"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="h-1 bg-black/20">
+          <div className="h-full bg-white/70 transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
       )}
     </header>

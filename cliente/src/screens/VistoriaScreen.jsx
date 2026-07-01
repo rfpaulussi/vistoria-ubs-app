@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Send, Loader2 } from 'lucide-react';
-import { useApp, UBS_LIST } from '../context/AppContext';
+import { useApp, UBS_LIST, campanhaAtual } from '../context/AppContext';
+
+const campanha = campanhaAtual();
 import BentoCard from '../components/BentoCard';
 import CardModal from '../components/CardModal';
 import { salvarVistoria } from '../lib/sheets';
@@ -42,6 +44,13 @@ export default function VistoriaScreen() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-32">
+      {/* Campaign banner */}
+      <div className="px-4 py-2 flex items-center gap-2 text-xs font-black" style={{ backgroundColor: campanha.cor + '18', color: campanha.cor, borderBottom: `2px solid ${campanha.cor}30` }}>
+        <span>{campanha.emoji}</span>
+        <span className="uppercase tracking-wide">{campanha.nome}</span>
+        <span className="font-normal opacity-70">— {campanha.desc}</span>
+      </div>
+
       {/* Identification inputs */}
       <div className="px-3 pt-3 pb-2 bg-white border-b border-slate-100 shadow-sm">
         <div className="grid grid-cols-2 gap-2">
