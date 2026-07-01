@@ -1,14 +1,27 @@
 import React, { useRef } from 'react';
 import { Camera } from 'lucide-react';
 
-const STATUS_CARD = {
-  pending: 'bg-slate-100 border-slate-200',
-  sim:     'bg-teal-700 border-teal-700 text-white',
-  nao:     'bg-red-700 border-red-700 text-white',
-  na:      'border-slate-300',
-};
+// trigger:'sim' questions (finding = non-conformity): sim→red, nao→teal
+// trigger:'nao' questions (normal): sim→teal, nao→red
+function cardClass(status, trigger) {
+  if (status === 'pending') return 'bg-slate-100 border-slate-200';
+  if (status === 'na')      return 'border-slate-300';
+  if (trigger === 'sim') {
+    return status === 'sim'
+      ? 'bg-red-700 border-red-700 text-white'
+      : 'bg-teal-700 border-teal-700 text-white';
+  }
+  return status === 'sim'
+    ? 'bg-teal-700 border-teal-700 text-white'
+    : 'bg-red-700 border-red-700 text-white';
+}
 
-const STATUS_ICON = { sim: '✅', nao: '🚫', na: '⚠️', pending: null };
+function statusIcon(status, trigger) {
+  if (status === 'na')      return '⚠️';
+  if (status === 'pending') return null;
+  if (trigger === 'sim')    return status === 'sim' ? '🚫' : '✅';
+  return status === 'sim' ? '✅' : '🚫';
+}
 
 const BTN_BASE = 'flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95';
 
@@ -44,7 +57,7 @@ export default function BentoCard({
   onLongPress,
 }) {
   const pressTimer = useRef(null);
-  const { id, label, desc, critical } = pergunta;
+  const { id, label, desc, trigger, critical } = pergunta;
 
   const handlePressStart = () => {
     pressTimer.current = setTimeout(() => onLongPress(id), 500);
@@ -53,6 +66,7 @@ export default function BentoCard({
 
   const isNa = status === 'na';
   const isPending = status === 'pending';
+  const isNonConform = trigger === 'sim' ? status === 'sim' : status === 'nao';
 
   return (
     <div
@@ -60,9 +74,9 @@ export default function BentoCard({
         col-span-1
         rounded-2xl border-2 p-3 flex flex-col justify-between
         transition-all duration-200 active:scale-[0.97] select-none cursor-pointer
-        ${STATUS_CARD[status]}
+        ${cardClass(status, trigger)}
         ${isNa ? 'bg-[repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1_3px,#e2e8f0_3px,#e2e8f0_10px)]' : ''}
-        ${critical && status === 'nao' ? 'ring-2 ring-red-300 ring-offset-1' : ''}
+        ${critical && isNonConform ? 'ring-2 ring-red-300 ring-offset-1' : ''}
       `}
       onPointerDown={handlePressStart}
       onPointerUp={handlePressEnd}
@@ -76,8 +90,8 @@ export default function BentoCard({
           </p>
           <div className="flex gap-1 shrink-0 items-center">
             {hasPhoto && <span className="text-xs">📷</span>}
-            {STATUS_ICON[status] && (
-              <span className="text-base leading-none">{STATUS_ICON[status]}</span>
+            {statusIcon(status, trigger) && (
+              <span className="text-base leading-none">{statusIcon(status, trigger)}</span>
             )}
             {isPending && (
               <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -99,8 +113,8 @@ export default function BentoCard({
         ))}
       </div>
 
-      {/* Inline justificativa + câmera when Não */}
-      {status === 'nao' && (
+      {/* Inline justificativa + câmera when non-conformity */}
+      {isNonConform && (
         <div className="mt-2 space-y-1.5">
           <textarea
             className="w-full bg-white/20 text-white placeholder-white/50 text-[11px] rounded-lg p-2 resize-none outline-none border border-white/20"

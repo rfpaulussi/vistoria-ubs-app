@@ -1,12 +1,33 @@
-import React, { useRef } from 'react';
-import { X, Camera } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { X, Camera, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
+function compressPhoto(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const MAX = 1200;
+    let w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.65));
+  };
+  img.src = dataUrl;
+}
+
 export default function CardModal({ perguntaId, onClose }) {
-  const { PERGUNTAS, respostas, updateResposta } = useApp();
+  const { PERGUNTAS, respostas, updateResposta, pauseTimer, resumeTimer } = useApp();
   const pergunta = PERGUNTAS.find(p => p.id === perguntaId);
   const resposta = respostas[perguntaId];
   const fileRef = useRef(null);
+
+  useEffect(() => {
+    pauseTimer();
+    return () => resumeTimer();
+  }, []);
 
   if (!pergunta || !resposta) return null;
 
@@ -14,7 +35,11 @@ export default function CardModal({ perguntaId, onClose }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => updateResposta(perguntaId, 'photo', reader.result);
+    reader.onloadend = () => {
+      compressPhoto(reader.result, compressed => {
+        updateResposta(perguntaId, 'photo', compressed);
+      });
+    };
     reader.readAsDataURL(file);
   };
 
@@ -27,7 +52,6 @@ export default function CardModal({ perguntaId, onClose }) {
         className="bg-white w-full rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        {/* Handle bar */}
         <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-4" />
 
         <div className="flex items-start justify-between mb-1">
@@ -86,7 +110,14 @@ export default function CardModal({ perguntaId, onClose }) {
           </button>
         )}
 
-        <div className="h-6" />
+        <button
+          onClick={onClose}
+          className="mt-4 w-full bg-teal-700 text-white py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+        >
+          <Check size={16} /> Salvar e Fechar
+        </button>
+
+        <div className="h-4" />
       </div>
     </div>
   );
