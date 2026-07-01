@@ -29,6 +29,8 @@ export const PERGUNTAS = [
   { id: 'limpezaVentiladores', label: 'Limpeza de Ventiladores',                 desc: 'Os ventiladores estão limpos, sem acúmulo de pó nas hélices e grades?',                                             trigger: 'nao', critical: false },
   { id: 'papeleiras',          label: 'Papeleiras em Condições e Quantidade',    desc: 'As papeleiras estão em boas condições de uso e em quantidade suficiente em todos os ambientes?',                    trigger: 'nao', critical: false },
   { id: 'saboneteiras',        label: 'Saboneteiras em Condições e Quantidade',  desc: 'As saboneteiras estão funcionando, higienizadas e abastecidas em quantidade suficiente?',                           trigger: 'nao', critical: false },
+  { id: 'vidrosBaixaAltura',   label: 'Limpeza de Vidros — Até 2m',              desc: 'Os vidros e superfícies envidraçadas até 2,0 metros estão limpos, sem manchas ou impressões digitais?',            trigger: 'nao', critical: false, requiresVolante: false },
+  { id: 'vidrosAltaAltura',   label: 'Limpeza de Vidros — Acima de 2m',         desc: 'Os vidros acima de 2,0 metros estão limpos? Pendência requer agendamento de equipe volante especializada.',           trigger: 'nao', critical: false, requiresVolante: true  },
   { id: 'responsavelTurno',    label: 'Responsável pelo Turno Presente',         desc: 'Há um líder ou responsável pela equipe de limpeza claramente definido e acompanhando?',                              trigger: 'nao', critical: false },
   { id: 'problemasTratados',   label: 'Feedback e Correção Imediata',            desc: 'As inconformidades apontadas na vistoria foram corrigidas e a equipe orientada na hora?',                           trigger: 'nao', critical: false },
 ];

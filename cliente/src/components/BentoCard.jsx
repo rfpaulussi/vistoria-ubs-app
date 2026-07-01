@@ -57,7 +57,7 @@ export default function BentoCard({
   onLongPress,
 }) {
   const pressTimer = useRef(null);
-  const { id, label, desc, trigger, critical } = pergunta;
+  const { id, label, desc, trigger, critical, requiresVolante } = pergunta;
 
   const handlePressStart = () => {
     pressTimer.current = setTimeout(() => onLongPress(id), 500);
@@ -112,6 +112,14 @@ export default function BentoCard({
           />
         ))}
       </div>
+
+      {/* Equipe volante alert */}
+      {requiresVolante && isNonConform && (
+        <div className="mt-2 bg-amber-400 text-amber-900 rounded-lg px-2 py-1.5 flex items-center gap-1.5">
+          <span className="text-sm">🚐</span>
+          <p className="text-[10px] font-black uppercase leading-tight">Agendar Equipe Volante</p>
+        </div>
+      )}
 
       {/* Inline justificativa + câmera when non-conformity */}
       {isNonConform && (

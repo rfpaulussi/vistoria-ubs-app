@@ -87,8 +87,15 @@ export default function RelatorioScreen() {
             : (
               <div className="space-y-4">
                 {irregularidades.map(p => (
-                  <div key={p.id} className="p-4 rounded-2xl border-2 border-red-100 bg-red-50">
-                    <p className="font-black text-xs uppercase text-slate-700 mb-2">{p.label}</p>
+                  <div key={p.id} className={`p-4 rounded-2xl border-2 ${p.requiresVolante ? 'border-amber-300 bg-amber-50' : 'border-red-100 bg-red-50'}`}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p className="font-black text-xs uppercase text-slate-700">{p.label}</p>
+                      {p.requiresVolante && (
+                        <span className="shrink-0 bg-amber-400 text-amber-900 text-[9px] font-black uppercase px-2 py-1 rounded-lg flex items-center gap-1 whitespace-nowrap">
+                          🚐 Equipe Volante
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-slate-500 italic">
                       "{p.reason || 'Sem justificativa.'}"
                     </p>
