@@ -39,7 +39,7 @@ const STORAGE_KEY = 'vistoria_state_v2';
 
 const makeInitialRespostas = () =>
   Object.fromEntries(
-    PERGUNTAS.map(p => [p.id, { status: 'pending', reason: '', photo: null }])
+    PERGUNTAS.map(p => [p.id, { status: 'pending', reason: '', photo: null, photoBefore: null }])
   );
 
 const makeInitialMeta = () => ({

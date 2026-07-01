@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { RefreshCw, AlertCircle, TrendingUp, TrendingDown, Minus, Bell } from 'lucide-react';
 import { buscarVistorias } from '../lib/sheets';
 
 function notaCor(n) {
@@ -24,6 +24,36 @@ function formatMes(isoOrBr) {
   const d = new Date(isoOrBr);
   if (!isNaN(d)) return d.toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' });
   return str.slice(0, 7);
+}
+
+function parseDate(raw) {
+  if (!raw) return null;
+  const str = String(raw).trim();
+  if (str.includes('/')) {
+    const p = str.split('/');
+    if (p.length >= 3) return new Date(p[2].slice(0,4), p[1]-1, p[0]);
+  }
+  const d = new Date(str.includes('T') ? str : str + 'T12:00:00');
+  return isNaN(d) ? null : d;
+}
+
+function computeAlertas(vistorias) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  // Most recent vistoria per UBS (assume array is oldest-first)
+  const ubsLatest = {};
+  vistorias.forEach(v => { if (v.ubs) ubsLatest[v.ubs] = v; });
+
+  return Object.values(ubsLatest)
+    .filter(v => v.dataRetorno)
+    .map(v => {
+      const retorno = parseDate(v.dataRetorno);
+      if (!retorno) return null;
+      retorno.setHours(0,0,0,0);
+      const diffDays = Math.round((retorno - today) / 86400000);
+      return { ubs: v.ubs, retorno, diffDays, nota: v.notaVistoria };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.diffDays - b.diffDays);
 }
 
 function computeStats(vistorias) {
@@ -92,7 +122,7 @@ export default function KPIsScreen() {
   const [vistorias, setVistorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
-  const [aba, setAba] = useState('ranking'); // 'ranking' | 'tendencia' | 'falhas'
+  const [aba, setAba] = useState('alertas'); // 'alertas' | 'ranking' | 'tendencia' | 'falhas'
 
   const carregar = async () => {
     setLoading(true);
@@ -110,6 +140,8 @@ export default function KPIsScreen() {
   useEffect(() => { carregar(); }, []);
 
   const stats = computeStats(vistorias);
+  const alertas = computeAlertas(vistorias);
+  const alertasUrgentes = alertas.filter(a => a.diffDays <= 3).length;
   const maxMedia = stats ? Math.max(...stats.ubsStats.map(u => u.media)) : 10;
   const maxFalha = stats ? (stats.falhasRanking[0]?.count || 1) : 1;
   const maxMesMedia = stats ? Math.max(...stats.tendencia.map(t => t.media)) : 10;
@@ -133,6 +165,7 @@ export default function KPIsScreen() {
         {/* Tab switcher */}
         <div className="flex gap-1 bg-teal-800/50 rounded-xl p-1">
           {[
+            { key: 'alertas', label: alertasUrgentes > 0 ? `🔔 ${alertasUrgentes}` : 'Alertas' },
             { key: 'ranking', label: 'Ranking' },
             { key: 'tendencia', label: 'Tendência' },
             { key: 'falhas', label: 'Falhas' },
@@ -198,6 +231,48 @@ export default function KPIsScreen() {
                 <p className="text-2xl font-black text-slate-700">{stats.ubsStats.length}</p>
               </div>
             </div>
+
+            {/* TAB: ALERTAS */}
+            {aba === 'alertas' && (
+              <div>
+                <p className="text-[10px] font-black uppercase text-slate-400 px-1 mb-2">Previsão de retorno por unidade</p>
+                {alertas.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs bg-white rounded-2xl border border-slate-100 p-6">
+                    <Bell size={28} className="mx-auto mb-2 opacity-30" />
+                    <p className="font-black uppercase text-sm">Sem retornos agendados</p>
+                    <p className="mt-1">Finalize vistorias com data de retorno para ver alertas</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {alertas.map((a, i) => {
+                      const vencido = a.diffDays < 0;
+                      const urgente = a.diffDays >= 0 && a.diffDays <= 3;
+                      const bg = vencido ? 'bg-red-50 border-red-200' : urgente ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100';
+                      const badge = vencido
+                        ? { cls: 'bg-red-600 text-white', label: `Vencido há ${Math.abs(a.diffDays)}d` }
+                        : a.diffDays === 0
+                          ? { cls: 'bg-red-500 text-white', label: 'Hoje!' }
+                          : urgente
+                            ? { cls: 'bg-amber-500 text-white', label: `Em ${a.diffDays}d` }
+                            : { cls: 'bg-slate-200 text-slate-600', label: `Em ${a.diffDays}d` };
+                      return (
+                        <div key={i} className={`rounded-2xl border shadow-sm p-3 flex items-center gap-3 ${bg}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black text-slate-800 uppercase truncate">{a.ubs}</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">
+                              Retorno: {a.retorno.toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 text-[10px] font-black px-2 py-1 rounded-lg ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* TAB: RANKING */}
             {aba === 'ranking' && (

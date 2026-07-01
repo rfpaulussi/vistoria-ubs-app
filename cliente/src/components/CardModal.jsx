@@ -23,6 +23,7 @@ export default function CardModal({ perguntaId, onClose }) {
   const pergunta = PERGUNTAS.find(p => p.id === perguntaId);
   const resposta = respostas[perguntaId];
   const fileRef = useRef(null);
+  const fileBeforeRef = useRef(null);
 
   useEffect(() => {
     pauseTimer();
@@ -31,13 +32,13 @@ export default function CardModal({ perguntaId, onClose }) {
 
   if (!pergunta || !resposta) return null;
 
-  const handlePhoto = e => {
+  const handlePhoto = (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
       compressPhoto(reader.result, compressed => {
-        updateResposta(perguntaId, 'photo', compressed);
+        updateResposta(perguntaId, field, compressed);
       });
     };
     reader.readAsDataURL(file);
@@ -75,40 +76,44 @@ export default function CardModal({ perguntaId, onClose }) {
           onChange={e => updateResposta(perguntaId, 'reason', e.target.value)}
         />
 
-        <label className="text-[10px] font-black uppercase text-slate-500 mb-1 block tracking-wider">
-          Foto de Evidência
-        </label>
-        <div
-          className="w-full h-44 border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer bg-slate-50 active:bg-slate-100"
-          onClick={() => fileRef.current?.click()}
-        >
-          {resposta.photo
-            ? <img src={resposta.photo} className="w-full h-full object-cover" alt="Evidência" />
-            : (
-              <div className="text-center text-slate-400">
-                <Camera size={28} className="mx-auto mb-1" />
-                <p className="text-[10px] font-black uppercase">Tirar Foto</p>
-              </div>
-            )
-          }
-        </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handlePhoto}
-        />
+        {/* Antes / Depois */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {/* Antes */}
+          <div>
+            <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-wider">📷 Antes</p>
+            <div
+              className="h-32 border-2 border-dashed border-slate-200 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer bg-slate-50 active:bg-slate-100"
+              onClick={() => fileBeforeRef.current?.click()}
+            >
+              {resposta.photoBefore
+                ? <img src={resposta.photoBefore} className="w-full h-full object-cover" alt="Antes" />
+                : <div className="text-center text-slate-300"><Camera size={20} className="mx-auto mb-0.5" /><p className="text-[9px] font-black uppercase">Galeria</p></div>
+              }
+            </div>
+            {resposta.photoBefore && (
+              <button className="mt-1 text-[9px] text-red-400 font-bold uppercase" onClick={() => updateResposta(perguntaId, 'photoBefore', null)}>Remover</button>
+            )}
+            <input ref={fileBeforeRef} type="file" accept="image/*" className="hidden" onChange={e => handlePhoto(e, 'photoBefore')} />
+          </div>
 
-        {resposta.photo && (
-          <button
-            className="mt-2 text-[10px] text-red-400 font-bold uppercase"
-            onClick={() => updateResposta(perguntaId, 'photo', null)}
-          >
-            Remover foto
-          </button>
-        )}
+          {/* Depois */}
+          <div>
+            <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-wider">📸 Depois</p>
+            <div
+              className="h-32 border-2 border-dashed border-slate-200 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer bg-slate-50 active:bg-slate-100"
+              onClick={() => fileRef.current?.click()}
+            >
+              {resposta.photo
+                ? <img src={resposta.photo} className="w-full h-full object-cover" alt="Depois" />
+                : <div className="text-center text-slate-300"><Camera size={20} className="mx-auto mb-0.5" /><p className="text-[9px] font-black uppercase">Câmera</p></div>
+              }
+            </div>
+            {resposta.photo && (
+              <button className="mt-1 text-[9px] text-red-400 font-bold uppercase" onClick={() => updateResposta(perguntaId, 'photo', null)}>Remover</button>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handlePhoto(e, 'photo')} />
+          </div>
+        </div>
 
         <button
           onClick={onClose}

@@ -99,12 +99,21 @@ export default function RelatorioScreen() {
                     <p className="text-sm text-slate-500 italic">
                       "{p.reason || 'Sem justificativa.'}"
                     </p>
-                    {p.photo && (
-                      <img
-                        src={p.photo}
-                        className="rounded-xl mt-3 w-full max-h-48 object-cover border border-red-200"
-                        alt="Evidência"
-                      />
+                    {(p.photoBefore || p.photo) && (
+                      <div className={`mt-3 ${p.photoBefore && p.photo ? 'grid grid-cols-2 gap-2' : ''}`}>
+                        {p.photoBefore && (
+                          <div>
+                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Antes</p>
+                            <img src={p.photoBefore} className="rounded-xl w-full max-h-36 object-cover border border-slate-200" alt="Antes" />
+                          </div>
+                        )}
+                        {p.photo && (
+                          <div>
+                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Depois</p>
+                            <img src={p.photo} className="rounded-xl w-full max-h-36 object-cover border border-red-200" alt="Depois" />
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
