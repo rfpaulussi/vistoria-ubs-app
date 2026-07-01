@@ -12,9 +12,6 @@ const NAV_ITEMS = [
 export default function BottomNav() {
   const { screen, setScreen, contadores } = useApp();
 
-  // Hide during active vistoria to avoid distraction
-  if (screen === 'vistoria' && contadores.pending > 0) return null;
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 flex shadow-[0_-4px_20px_rgba(0,0,0,0.06)] print:hidden">
       {NAV_ITEMS.map(({ screen: s, icon: Icon, label }) => (
