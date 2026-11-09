@@ -1,8 +1,6 @@
 import React from 'react';
-import { ClipboardList, History, CalendarDays, BarChart2 } from 'lucide-react';
-import { useApp, campanhaAtual } from '../context/AppContext';
-
-const campanha = campanhaAtual();
+import { ClipboardList, History, CalendarDays, BarChart2, ListChecks } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const NAV_ITEMS = [
   { screen: 'vistoria',     icon: ClipboardList, label: 'Vistoria'  },
@@ -12,28 +10,22 @@ const NAV_ITEMS = [
 ];
 
 export default function BottomNav() {
-  const { screen, setScreen, resetVistoria } = useApp();
-
-  const handleNav = (s) => {
-    // Coming from relatorio → clicking Vistoria starts fresh
-    if (s === 'vistoria' && screen === 'relatorio') {
-      resetVistoria();
-    } else {
-      setScreen(s);
-    }
-  };
+  const { screen, setScreen, perfil } = useApp();
+  if (screen === 'relatorio') return null;
+  const gestao = { screen: 'gestao', icon: ListChecks, label: perfil?.papel === 'admin' ? 'Gestão' : 'Retornos' };
+  const itens = perfil?.papel === 'admin' ? [gestao, ...NAV_ITEMS]
+    : perfil ? [...NAV_ITEMS.filter(item => item.screen !== 'kpis'), gestao] : NAV_ITEMS;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 flex shadow-[0_-4px_20px_rgba(0,0,0,0.06)] print:hidden">
-      {NAV_ITEMS.map(({ screen: s, icon: Icon, label }) => (
+    <nav className="app-nav print:hidden" aria-label="Navegação principal">
+      {itens.map(({ screen: s, icon: Icon, label }) => (
         <button
           key={s}
-          onClick={() => handleNav(s)}
-          className="flex-1 py-3 flex flex-col items-center gap-0.5 transition-colors text-slate-400"
-          style={screen === s ? { color: campanha.cor } : {}}
+          onClick={() => setScreen(s)}
+          aria-current={screen === s ? 'page' : undefined}
         >
-          <Icon size={20} />
-          <span className="text-[9px] font-black uppercase">{label}</span>
+          <span className="app-nav-icon"><Icon size={20} aria-hidden="true" /></span>
+          <span>{label}</span>
         </button>
       ))}
     </nav>

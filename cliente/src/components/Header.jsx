@@ -1,63 +1,46 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { CalendarDays, ClipboardCheck, History, ListChecks, ChartNoAxesCombined, HeartPulse } from 'lucide-react';
 import { useApp, campanhaAtual } from '../context/AppContext';
 
-const campanha = campanhaAtual();
-
-function formatTimer(seconds) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = (seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
+const paginas = {
+  historico: ['Histórico de vistorias', 'Consulte visitas, registros e evidências.', History],
+  planejamento: ['Agenda', 'Acompanhe o roteiro de visitas.', CalendarDays],
+  kpis: ['Indicadores', 'Acompanhe retornos e compare os resultados.', ChartNoAxesCombined],
+};
 
 export default function Header() {
-  const { meta, timer, contadores, PERGUNTAS, screen, setScreen } = useApp();
-  const total = PERGUNTAS.length;
-  const respondidos = total - contadores.pending;
-  const pct = Math.round((respondidos / total) * 100);
-  const isVistoria = screen === 'vistoria';
-
-  const SCREEN_LABELS = {
-    historico: 'Histórico',
-    planejamento: 'Agenda',
-    kpis: 'KPIs',
-  };
+  const { meta, contadores, PERGUNTAS, screen, perfil } = useApp();
+  const campanha = campanhaAtual();
+  const campo = screen === 'vistoria';
+  const respondidos = PERGUNTAS.length - contadores.pending;
+  const [titulo, subtitulo, Icone] = campo
+    ? [meta.ubs || 'Nova vistoria', 'Checklist de limpeza e conservação', ClipboardCheck]
+    : screen === 'gestao'
+      ? perfil?.papel === 'admin'
+        ? ['Painel de gestão', 'Acompanhe o que precisa de ação.', ListChecks]
+        : ['Meus retornos', 'Consulte prazos e orientações para as suas visitas.', ListChecks]
+      : paginas[screen];
 
   return (
-    <header className="text-white sticky top-0 z-50 shadow-lg" style={{ backgroundColor: campanha.cor, color: campanha.corText }}>
-      <div className="flex items-center justify-between px-4 py-2">
-        {!isVistoria ? (
-          <>
-            <button
-              onClick={() => setScreen('vistoria')}
-              className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5 active:bg-white/20"
-            >
-              <ArrowLeft size={14} />
-              <span className="text-xs font-black">Vistoria</span>
-            </button>
-            <p className="text-sm font-black">{SCREEN_LABELS[screen] ?? ''}</p>
-            <div className="w-20" />
-          </>
-        ) : (
-          <>
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Vistoria Campo</p>
-              <p className="text-sm font-black leading-tight truncate max-w-[200px]">
-                {meta.ubs || 'Sem unidade'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-base font-mono font-black tabular-nums">{formatTimer(timer)}</p>
-              <p className="text-[9px] opacity-60">{respondidos}/{total} itens</p>
-            </div>
-          </>
-        )}
-      </div>
-      {isVistoria && (
-        <div className="h-1 bg-black/20">
-          <div className="h-full bg-white/70 transition-all duration-500" style={{ width: `${pct}%` }} />
+    <>
+      <header className="app-hero">
+        <div className="app-hero-icon"><Icone size={22} aria-hidden="true" /></div>
+        <div>
+          <p className="app-hero-kicker">Vistoria UBS</p>
+          <h1>{titulo}</h1>
+          <p>{subtitulo}</p>
         </div>
-      )}
-    </header>
+        {campo && (
+          <div className="app-hero-progress">
+            <div className="flex justify-between gap-3 text-sm"><span>Progresso</span><strong>{respondidos} de {PERGUNTAS.length}</strong></div>
+            <progress aria-label="Itens respondidos" max={PERGUNTAS.length} value={respondidos} />
+          </div>
+        )}
+      </header>
+      <div className="campaign-band">
+        <HeartPulse size={17} aria-hidden="true" />
+        <div><strong>{campanha.nome}</strong><span>{campanha.desc}</span></div>
+      </div>
+    </>
   );
 }

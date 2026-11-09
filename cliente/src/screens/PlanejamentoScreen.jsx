@@ -1,16 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Share2, Settings, X, AlertTriangle, RotateCcw } from 'lucide-react';
-
-const UNIDADES = [
-  'UBS PONTE GRANDE', 'UBS BRAZ CUBAS', 'UBS VILA SUISSA', 'CECCO',
-  'UBS BOTUJURU', 'UBS VILA MORAES', 'UBS VILA JUNDIAÍ', 'ZOONOZES',
-  'UBS JARDIM CAMILA', 'UBS JARDIM IVETE', 'UBS SANTA TERESA', 'EMESP',
-  'UBS MINERAÇÃO', 'UBS JUNDIAPEBA', 'CURE/CEADIM', 'CAPS INFANTIL/CIAS',
-  'CAPS 2', 'UBS SABAUNA', 'UAPS 1', 'UAPS 2',
-  'SECRETARIA DE SAÚDE', 'PROMEG', 'PRÓ HIPER', 'ALMOXARIFADO SAÚDE',
-  'PRÓ MULHER', 'UBS SANTO ÂNGELO', 'UBS VILA APARECIDA', 'CENTRO POP',
-  'UBS VILA DA PRATA', 'UBS VILA NATAL',
-];
+import { ROTEIRO_UNIDADES, atualizarIndiceRoteiro } from '../lib/unidades';
 
 const FERIADOS = new Set([
   '2026-01-01','2026-02-16','2026-02-17','2026-04-03','2026-04-21',
@@ -49,7 +39,13 @@ function inicioSemana(date) {
 function loadState() {
   try {
     const raw = localStorage.getItem('planejamento_config');
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const config = JSON.parse(raw);
+      const startIndex = config.startUnidade
+        ? ROTEIRO_UNIDADES.indexOf(config.startUnidade)
+        : atualizarIndiceRoteiro(config.startIndex ?? 0);
+      return { ...config, startIndex: Math.max(0, startIndex) };
+    }
   } catch {}
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -57,7 +53,10 @@ function loadState() {
 }
 
 function saveState(cfg) {
-  localStorage.setItem('planejamento_config', JSON.stringify(cfg));
+  localStorage.setItem('planejamento_config', JSON.stringify({
+    ...cfg,
+    startUnidade: ROTEIRO_UNIDADES[cfg.startIndex],
+  }));
 }
 
 function gerarRoteiro(startIso, startIndex, excecoes, numDias = 90) {
@@ -68,7 +67,7 @@ function gerarRoteiro(startIso, startIndex, excecoes, numDias = 90) {
   let contador = startIndex;
   while (resultado.length < numDias) {
     if (isUtil(cur, excSet)) {
-      resultado.push({ iso: isoDate(cur), date: new Date(cur), ubs: UNIDADES[contador % UNIDADES.length] });
+      resultado.push({ iso: isoDate(cur), date: new Date(cur), ubs: ROTEIRO_UNIDADES[contador % ROTEIRO_UNIDADES.length] });
       contador++;
     }
     cur = addDays(cur, 1);
@@ -110,7 +109,7 @@ function ConfigModal({ config, onSave, onClose }) {
             onChange={e => setStartIndex(Number(e.target.value))}
             className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none mb-6 bg-white"
           >
-            {UNIDADES.map((u, i) => (
+            {ROTEIRO_UNIDADES.map((u, i) => (
               <option key={i} value={i}>#{i+1} — {u}</option>
             ))}
           </select>
@@ -257,7 +256,7 @@ export default function PlanejamentoScreen() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-teal-700 text-white px-4 pt-4 pb-4 sticky top-0 z-40 shadow-lg">
+      <div className="legacy-screen-heading px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-1">
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Roteiro Operacional</p>

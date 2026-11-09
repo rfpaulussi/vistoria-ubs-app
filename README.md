@@ -2,26 +2,33 @@
 
 Aplicativo móvel para vistoria de Unidades Básicas de Saúde (UBS) com captura de fotos, registro de conformidades e geração de relatórios técnicos compartilháveis via WhatsApp.
 
-## 🎯 Funcionalidades
+## Funcionalidades
 
-- ✅ Formulário de Vistoria com 15 critérios de conformidade
-- ✅ Captura de Fotos para evidências
-- ✅ Justificativas para não-conformidades
-- ✅ Relatório Técnico visual
-- ✅ Compartilhamento via WhatsApp
-- ✅ Dashboard com histórico
-- ✅ Integração Firebase
+- Formulário de vistoria com critérios de conformidade
+- Captura de fotos para evidências
+- Justificativas para não-conformidades
+- Relatório técnico visual
+- Compartilhamento via WhatsApp
+- Dashboard com histórico
+- Persistência via Google Sheets API
 
-## 🚀 Deploy
+## Configuração
 
-Este projeto está deployado no Vercel. Acesse: [Seu link aqui]
+Crie `cliente/.env` com as variáveis:
 
-## 🔐 Configuração Firebase
+```
+VITE_GOOGLE_SHEETS_API_KEY=sua_chave_aqui
+VITE_SHEET_ID=seu_sheet_id_aqui
+```
 
-Variáveis de ambiente necessárias:
-- VITE_FIREBASE_API_KEY
-- VITE_FIREBASE_AUTH_DOMAIN
-- VITE_FIREBASE_PROJECT_ID
-- VITE_FIREBASE_STORAGE_BUCKET
-- VITE_FIREBASE_MESSAGING_SENDER_ID
-- VITE_FIREBASE_APP_ID
+## Uso
+
+```bash
+cd cliente
+npm install
+npm run dev
+```
+
+## Deploy
+
+Deployado no Vercel. Configure as variáveis de ambiente no painel do Vercel antes do deploy.

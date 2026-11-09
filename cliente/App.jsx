@@ -1,39 +1,46 @@
-import React from 'react';
-import { AppProvider, useApp } from './src/context/AppContext';
+import React, { useEffect } from 'react';
+import { AppProvider, useApp, campanhaAtual } from './src/context/AppContext';
 import Header from './src/components/Header';
-import ProgressSummary from './src/components/ProgressSummary';
 import BottomNav from './src/components/BottomNav';
 import VistoriaScreen from './src/screens/VistoriaScreen';
 import RelatorioScreen from './src/screens/RelatorioScreen';
 import HistoricoScreen from './src/screens/HistoricoScreen';
 import PlanejamentoScreen from './src/screens/PlanejamentoScreen';
 import KPIsScreen from './src/screens/KPIsScreen';
+import AcessoSupabase from './src/components/AcessoSupabase';
+import GestaoScreen from './src/screens/GestaoScreen';
 
 function AppInner() {
-  const { screen } = useApp();
+  const { screen, perfil } = useApp();
   const showHeader = screen !== 'relatorio';
-  const showProgress = screen === 'vistoria';
+  const campanha = campanhaAtual();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [screen]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="app-frame" style={{ '--campaign-color': campanha.cor }}>
+      <div className="app-shell">
       {showHeader && <Header />}
-      {showProgress && <ProgressSummary />}
 
       {screen === 'vistoria'     && <VistoriaScreen />}
       {screen === 'relatorio'    && <RelatorioScreen />}
       {screen === 'historico'    && <HistoricoScreen />}
       {screen === 'planejamento' && <PlanejamentoScreen />}
       {screen === 'kpis'         && <KPIsScreen />}
+      {screen === 'gestao' && perfil && <GestaoScreen administrador={perfil.papel === 'admin'} />}
 
       <BottomNav />
+      </div>
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppInner />
-    </AppProvider>
+    <AcessoSupabase>
+      {perfil => <AppProvider key={perfil?.id ?? 'legado'} perfil={perfil}><AppInner /></AppProvider>}
+    </AcessoSupabase>
   );
 }

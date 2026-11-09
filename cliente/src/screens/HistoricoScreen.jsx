@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, ChevronRight, RefreshCw, AlertCircle } from 'lucide-react';
-import { buscarVistorias } from '../lib/sheets';
+import { buscarVistorias } from '../lib/vistorias';
+import { UNIDADES } from '../lib/unidades';
+import { chaveUnidade, filtrarHistorico, limitePeriodo } from '../lib/filtrosHistorico';
+import RelatorioScreen from './RelatorioScreen';
+
+const porPagina = 8;
+const nomesUnidades = new Map(UNIDADES.map(nome => [chaveUnidade(nome), nome]));
 
 function notaCor(nota) {
   const n = Number(nota);
@@ -11,72 +17,11 @@ function notaCor(nota) {
 
 function formatData(raw) {
   if (!raw) return '—';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw.split('-').reverse().join('/');
   if (typeof raw === 'string' && raw.includes('/')) return raw.split(' ')[0];
   const d = new Date(raw);
   if (isNaN(d)) return String(raw);
   return d.toLocaleDateString('pt-BR');
-}
-
-function DetalheModal({ vistoria, onClose }) {
-  const falhasLista = vistoria.falhas
-    ? vistoria.falhas.split('|').map(f => f.trim()).filter(Boolean)
-    : [];
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={onClose}>
-      <div
-        className="bg-white w-full rounded-t-3xl max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-4 mb-3" />
-
-        <div className="px-5 pb-8">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Relatório Histórico</p>
-              <h2 className="text-xl font-black uppercase text-slate-900 leading-tight">{vistoria.ubs}</h2>
-              <p className="text-xs text-slate-500 mt-0.5">{vistoria.encarregada} · {formatData(vistoria.data)}</p>
-            </div>
-            <button onClick={onClose} className="p-1 text-slate-400 mt-1">
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="flex gap-3 mb-5">
-            <div className={`rounded-2xl px-4 py-3 text-center ${notaCor(vistoria.notaVistoria)}`}>
-              <p className="text-[9px] font-black uppercase opacity-80 mb-0.5">Nota</p>
-              <p className="text-3xl font-black leading-none">{vistoria.notaVistoria ?? '—'}</p>
-            </div>
-            {vistoria.dataRetorno && (
-              <div className="flex-1 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-200">
-                <p className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Retorno</p>
-                <p className="text-sm font-black text-slate-700">{formatData(vistoria.dataRetorno)}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <p className="text-[10px] font-black uppercase text-red-600 mb-2">🚫 Falhas Registradas</p>
-            {falhasLista.length === 0
-              ? <div className="bg-teal-50 text-teal-700 rounded-2xl p-4 text-xs font-bold text-center">✅ Unidade Conforme</div>
-              : <div className="space-y-2">
-                  {falhasLista.map((f, i) => (
-                    <div key={i} className="bg-red-50 border border-red-100 rounded-xl p-3 text-xs text-slate-700">{f}</div>
-                  ))}
-                </div>
-            }
-          </div>
-
-          {vistoria.consideracoesGerais && (
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-              <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Observações</p>
-              <p className="text-sm text-slate-600 italic">{vistoria.consideracoesGerais}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function HistoricoScreen() {
@@ -84,7 +29,13 @@ export default function HistoricoScreen() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
   const [filtroUbs, setFiltroUbs] = useState('');
-  const [filtroData, setFiltroData] = useState('');
+  const [periodo, setPeriodo] = useState('30');
+  const [inicio, setInicio] = useState('');
+  const [fim, setFim] = useState('');
+  const [frequencia, setFrequencia] = useState(1);
+  const [modo, setModo] = useState('visitas');
+  const [pagina, setPagina] = useState(1);
+  const [unidade, setUnidade] = useState('');
   const [selecionada, setSelecionada] = useState(null);
 
   const carregar = async () => {
@@ -102,54 +53,97 @@ export default function HistoricoScreen() {
 
   useEffect(() => { carregar(); }, []);
 
-  const listagem = vistorias.filter(v => {
-    const ubsOk = !filtroUbs || (v.ubs ?? '').toLowerCase().includes(filtroUbs.toLowerCase());
-    const dataOk = !filtroData || String(v.data ?? '').includes(filtroData);
-    return ubsOk && dataOk;
-  });
+  if (selecionada) return <RelatorioScreen arquivada={selecionada} historico={vistorias} onVoltar={() => setSelecionada(null)} />;
 
-  const ubsUnicas = [...new Set(vistorias.map(v => v.ubs).filter(Boolean))].sort();
+  const hoje = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+  const intervaloInvalido = periodo === 'personalizado' && inicio && fim && inicio > fim;
+  const { visitas, unidades } = filtrarHistorico(intervaloInvalido ? [] : vistorias, {
+    busca: filtroUbs, unidade, frequencia, nomes: nomesUnidades,
+    inicio: periodo === 'personalizado' ? inicio : limitePeriodo(periodo, hoje),
+    fim: periodo === 'personalizado' ? fim : periodo === 'todos' ? '' : hoje,
+  });
+  const registros = modo === 'visitas' ? visitas : unidades;
+  const paginas = Math.max(1, Math.ceil(registros.length / porPagina));
+  const paginaAtual = Math.min(pagina, paginas);
+  const deslocamento = (paginaAtual - 1) * porPagina;
+  const listagem = registros.slice(deslocamento, deslocamento + porPagina);
+
+  function mudar(setter, valor) {
+    setter(valor);
+    setPagina(1);
+  }
+
+  function abrirUnidade(grupo) {
+    setUnidade(grupo.chave);
+    setFiltroUbs(grupo.nome);
+    mudar(setModo, 'visitas');
+  }
+
+  function mudarPagina(proxima) {
+    setPagina(proxima);
+    document.getElementById('historico-resultados')?.focus({ preventScroll: true });
+    document.getElementById('historico-resultados')?.scrollIntoView({ block: 'start' });
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      <div className="bg-teal-700 text-white px-4 pt-4 pb-3 sticky top-0 z-40 shadow-lg">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Histórico</p>
-            <p className="text-sm font-black">
-              {loading ? 'Carregando...' : `${listagem.length} vistoria(s)`}
-            </p>
-          </div>
-          <button onClick={carregar} disabled={loading} className="p-2 opacity-80 active:opacity-100">
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+    <div className="app-content space-y-4">
+      <section className="field-card space-y-3" aria-label="Filtros do histórico">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="field-section">Filtrar histórico</h2>
+          <button type="button" onClick={carregar} disabled={loading} className="app-secondary">
+            <RefreshCw size={16} aria-hidden="true" /> Atualizar
           </button>
         </div>
-
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/60" />
-            <input
-              type="text"
-              placeholder="Filtrar por UBS..."
-              value={filtroUbs}
-              onChange={e => setFiltroUbs(e.target.value)}
-              className="w-full bg-white/20 text-white placeholder-white/50 text-xs rounded-xl pl-7 pr-3 py-2 outline-none"
-              list="ubs-list"
-            />
-            <datalist id="ubs-list">
-              {ubsUnicas.map(u => <option key={u} value={u} />)}
-            </datalist>
-          </div>
-          <input
-            type="date"
-            value={filtroData}
-            onChange={e => setFiltroData(e.target.value)}
-            className="bg-white/20 text-white text-xs rounded-xl px-3 py-2 outline-none w-[130px]"
-          />
+        <div className="history-filters">
+          <label className="grid gap-1 text-sm font-semibold">Período
+            <select className="app-input" value={periodo} onChange={e => mudar(setPeriodo, e.target.value)}>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="todos">Todo o histórico</option>
+              <option value="personalizado">Intervalo personalizado</option>
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold">Frequência por unidade
+            <select className="app-input" value={frequencia} onChange={e => mudar(setFrequencia, Number(e.target.value))}>
+              <option value={1}>Qualquer frequência</option>
+              <option value={2}>2 ou mais visitas no período</option>
+              <option value={3}>3 ou mais visitas no período</option>
+              <option value={5}>5 ou mais visitas no período</option>
+            </select>
+          </label>
+          {periodo === 'personalizado' && <>
+            <label className="grid gap-1 text-sm font-semibold">Data inicial
+              <input type="date" className="app-input" value={inicio} onChange={e => mudar(setInicio, e.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">Data final
+              <input type="date" className="app-input" value={fim} onChange={e => mudar(setFim, e.target.value)} />
+            </label>
+          </>}
+          <label className="grid gap-1 text-sm font-semibold history-search">Unidade
+            <span className="relative">
+              <Search size={16} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input type="search" className="app-input pl-9" placeholder="Buscar por nome" value={filtroUbs}
+                onChange={e => { setUnidade(''); mudar(setFiltroUbs, e.target.value); }} />
+            </span>
+          </label>
         </div>
-      </div>
+        {intervaloInvalido && <p role="alert" className="text-sm text-red-800">A data final deve ser igual ou posterior à inicial.</p>}
+      </section>
 
-      <div className="px-3 pt-3 space-y-2">
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="field-section scroll-mt-4" id="historico-resultados" tabIndex={-1}>
+            {modo === 'visitas' ? 'Visitas' : 'Frequência por unidade'}
+          </h2>
+          <div className="history-switch" role="group" aria-label="Visualização do histórico">
+            <button type="button" aria-pressed={modo === 'visitas'} onClick={() => mudar(setModo, 'visitas')}>Por visita</button>
+            <button type="button" aria-pressed={modo === 'unidades'} onClick={() => mudar(setModo, 'unidades')}>Por unidade</button>
+          </div>
+        </div>
+        {!loading && !erro && <p className="text-sm text-slate-600" aria-live="polite">
+          {visitas.length} {visitas.length === 1 ? 'visita' : 'visitas'} no período
+          {registros.length > 0 && ` · Exibindo ${deslocamento + 1}–${deslocamento + listagem.length} de ${registros.length}`}
+        </p>}
         {loading && (
           <div className="flex items-center justify-center py-16 text-slate-400">
             <RefreshCw size={24} className="animate-spin mr-2" />
@@ -168,21 +162,28 @@ export default function HistoricoScreen() {
           </div>
         )}
 
-        {!loading && !erro && listagem.length === 0 && (
+        {!loading && !erro && !intervaloInvalido && listagem.length === 0 && (
           <div className="text-center py-16 text-slate-400">
             <p className="text-4xl mb-2">📋</p>
             <p className="font-black text-sm text-slate-500 uppercase">Nenhuma vistoria</p>
-            <p className="text-xs mt-1">{filtroUbs || filtroData ? 'Ajuste os filtros' : 'Ainda não há registros'}</p>
+            <p className="text-sm mt-1">Experimente ampliar o período ou ajustar os filtros.</p>
           </div>
         )}
 
-        {!loading && listagem.map((v, i) => {
+        {!loading && !erro && modo === 'unidades' && listagem.map(grupo => (
+          <button key={grupo.chave} type="button" className="history-unit field-card" onClick={() => abrirUnidade(grupo)}>
+            <span><strong>{grupo.nome}</strong><span className="block text-sm text-slate-600">Última visita no período · {formatData(grupo.ultima)}</span></span>
+            <span className="status-pill">{grupo.total} {grupo.total === 1 ? 'visita' : 'visitas'}</span>
+            <ChevronRight size={17} aria-hidden="true" />
+          </button>
+        ))}
+        {!loading && !erro && modo === 'visitas' && listagem.map((v, i) => {
           const falhasQtd = v.falhas ? v.falhas.split('|').filter(Boolean).length : 0;
           return (
             <button
-              key={i}
+              key={v.id ?? deslocamento + i}
               onClick={() => setSelecionada(v)}
-              className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.98] transition-all"
+              className="history-visit field-card"
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${notaCor(v.notaVistoria)}`}>
                 {v.notaVistoria ?? '?'}
@@ -206,11 +207,13 @@ export default function HistoricoScreen() {
             </button>
           );
         })}
+        {!loading && !erro && paginas > 1 && <nav className="history-pagination" aria-label="Páginas do histórico">
+          <button type="button" className="app-secondary" disabled={paginaAtual === 1} onClick={() => mudarPagina(paginaAtual - 1)}>Anterior</button>
+          <span className="text-sm text-slate-600">Página {paginaAtual} de {paginas}</span>
+          <button type="button" className="app-secondary" disabled={paginaAtual === paginas} onClick={() => mudarPagina(paginaAtual + 1)}>Próxima</button>
+        </nav>}
       </div>
 
-      {selecionada && (
-        <DetalheModal vistoria={selecionada} onClose={() => setSelecionada(null)} />
-      )}
     </div>
   );
 }

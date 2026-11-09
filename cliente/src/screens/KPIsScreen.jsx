@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, AlertCircle, TrendingUp, TrendingDown, Minus, Bell } from 'lucide-react';
-import { buscarVistorias } from '../lib/sheets';
+import { buscarVistorias } from '../lib/vistorias';
 
 function notaCor(n) {
   if (n >= 8) return { bg: 'bg-teal-700', text: 'text-teal-700', bar: '#0f766e' };
@@ -16,6 +16,7 @@ function parseFalhas(raw) {
 function formatMes(isoOrBr) {
   if (!isoOrBr) return '—';
   const str = String(isoOrBr);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return `${str.slice(5, 7)}/${str.slice(0, 4)}`;
   // "DD/MM/YYYY HH:mm:ss" or ISO
   if (str.includes('/')) {
     const parts = str.split('/');
@@ -149,7 +150,7 @@ export default function KPIsScreen() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-teal-700 text-white px-4 pt-4 pb-3 sticky top-0 z-40 shadow-lg">
+      <div className="legacy-screen-heading px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Métricas</p>

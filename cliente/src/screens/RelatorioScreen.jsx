@@ -1,170 +1,150 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Printer, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import DocumentoVistoria from '../components/DocumentoVistoria';
+import { resumoEquipe, usaConferenciaEquipe } from '../lib/equipe';
+import { buscarConferenciaEquipe, buscarEvidencias, buscarItensRelatorio, buscarVistorias } from '../lib/vistorias';
+import { apontamentosWhatsApp, formatarData, formatarNota, tituloPdfVistoria, visitasAnteriores } from '../lib/relatorio';
 
-export default function RelatorioScreen() {
-  const { meta, respostas, PERGUNTAS, resetVistoria } = useApp();
+function itensDaVisita(perguntas, respostas) {
+  return perguntas.map(pergunta => {
+    const resposta = respostas[pergunta.id];
+    const falhou = resposta.status === pergunta.trigger;
+    return {
+      item_id: pergunta.id, item_titulo: pergunta.label, critico: pergunta.critical,
+      resultado: resposta.status === 'na' ? 'nao_se_aplica' : falhou ? 'nao_conforme' : 'conforme',
+      observacao: resposta.reason, corrigido_na_visita: Boolean(resposta.corrigidoNaVisita),
+      requiresVolante: pergunta.requiresVolante,
+    };
+  });
+}
 
-  const irregularidades = PERGUNTAS
-    .filter(p => respostas[p.id].status === p.trigger)
-    .map(p => ({ ...p, ...respostas[p.id] }));
+function fotosDaVisita(perguntas, respostas) {
+  return perguntas.flatMap(({ id, label }) => [
+    { item_id: id, titulo: label, tipo: 'antes', url: respostas[id].photoBefore },
+    { item_id: id, titulo: label, tipo: 'depois', url: respostas[id].photo },
+  ].filter(foto => foto.url));
+}
 
-  const compartilharWhatsApp = () => {
-    const falhas = irregularidades
-      .map(p => `• ${p.label}: ${p.reason || 'Sem justificativa'}`)
-      .join('\n');
+async function carregarRelatorio(visita, lista, recente) {
+  const dados = await Promise.allSettled([
+    lista ?? buscarVistorias(),
+    buscarItensRelatorio(visita.id),
+    recente ? null : buscarConferenciaEquipe(visita.id),
+    recente ? [] : buscarEvidencias(visita.id),
+  ]);
+  const [historico, itens, equipe, fotos] = dados.map(resultado => resultado.value);
+  const indisponiveis = ['histórico', 'apontamentos', 'conferência da equipe', 'evidências']
+    .filter((_, i) => dados[i].status === 'rejected');
+  const anteriores = visitasAnteriores(historico ?? [], visita);
+  let itensAnteriores = [];
+  if (anteriores[0]?.id) {
+    try {
+      itensAnteriores = await buscarItensRelatorio(anteriores[0].id);
+    } catch {
+      indisponiveis.push('checklist da visita anterior');
+    }
+  }
+  return { anteriores, itens, equipe, fotos, itensAnteriores, indisponiveis };
+}
+
+export default function RelatorioScreen({ arquivada, historico, onVoltar }) {
+  const { meta, respostas, PERGUNTAS, resetVistoria, perfil, conferencia, vistoriaId } = useApp();
+  const [visita] = useState(() => arquivada ?? ({
+    id: perfil ? vistoriaId : null,
+    ubs: meta.ubs,
+    data: meta.dataVistoria,
+    dataFinalizacao: perfil ? new Date().toISOString() : null,
+    encarregada: meta.encarregada,
+    notaVistoria: meta.notaVistoria,
+    dataRetorno: meta.dataRetorno,
+    consideracoesGerais: meta.consideracoesGerais,
+  }));
+  const [dados, setDados] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
+  const [imprimindo, setImprimindo] = useState(false);
+  const recente = !arquivada;
+  const tituloPdf = tituloPdfVistoria(visita);
+
+  useEffect(() => {
+    const tituloAnterior = document.title;
+    document.title = tituloPdf;
+    return () => { document.title = tituloAnterior; };
+  }, [tituloPdf]);
+
+  useEffect(() => {
+    if (arquivada) window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [arquivada]);
+
+  useEffect(() => {
+    let ativo = true;
+    carregarRelatorio(visita, historico, recente).then(resultado => {
+      if (ativo) setDados(resultado);
+    });
+    return () => { ativo = false; };
+  }, [visita, historico, recente, tentativa]);
+
+  const perguntas = new Map(PERGUNTAS.map((pergunta, ordem) => [pergunta.id, { ...pergunta, ordem }]));
+  const acoes = new Map(dados?.itens?.map(item => [item.item_id, item.acao]));
+  const itens = recente ? itensDaVisita(PERGUNTAS, respostas).map(item => ({ ...item, acao: acoes.get(item.item_id) }))
+    : (dados?.itens ?? []).map(item => ({ ...item, requiresVolante: perguntas.get(item.item_id)?.requiresVolante }))
+      .sort((a, b) => (perguntas.get(a.item_id)?.ordem ?? Infinity) - (perguntas.get(b.item_id)?.ordem ?? Infinity));
+  const equipe = recente
+    ? (usaConferenciaEquipe && perfil && conferencia?.unidade === meta.ubs ? conferencia : null)
+    : dados?.equipe;
+  const fotos = recente ? fotosDaVisita(PERGUNTAS, respostas) : (dados?.fotos ?? []).map(foto => ({
+    ...foto, titulo: foto.respostas?.item_titulo || 'Evidência da vistoria',
+  }));
+
+  function compartilharWhatsApp() {
+    const resumo = equipe && resumoEquipe(equipe);
+    const nota = visita.notaVistoria == null ? 'Não informada' : `${formatarNota(visita.notaVistoria)}/10`;
     const texto = [
-      `🚨 *RELATÓRIO DE VISTORIA: ${meta.ubs.toUpperCase()}*`,
-      `👤 Encarregada: ${meta.encarregada}`,
-      `⭐ Nota: *${meta.notaVistoria}/10*`,
-      `📅 Retorno: ${meta.dataRetorno ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR') : 'A definir'}`,
+      `*RELATÓRIO DE VISTORIA · ${visita.ubs}*`,
+      `Data da visita: ${formatarData(visita.data)}`,
+      `Encarregada: ${visita.encarregada || 'Não informada'}`,
+      `Nota: ${nota}`,
+      `Retorno previsto: ${visita.dataRetorno ? formatarData(visita.dataRetorno) : 'A definir'}`,
+      ...(resumo ? [`Equipe: ${resumo.encontrados} encontrados e ${resumo.naoEncontrados} não encontrados.`] : []),
       '',
-      `⚠️ *PRINCIPAIS FALHAS:*`,
-      falhas || 'Nenhuma falha crítica registrada.',
-      '',
-      `📝 *OBS:* ${meta.consideracoesGerais || 'Consultar relatório.'}`,
+      ...apontamentosWhatsApp(itens, visita.falhas),
+      ...(visita.consideracoesGerais ? ['', '*Considerações*', visita.consideracoesGerais] : []),
     ].join('\n');
-    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
-  };
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
+  }
+
+  async function imprimir() {
+    setImprimindo(true);
+    const imagens = [...document.querySelectorAll('#relatorio-pdf img')];
+    await Promise.allSettled(imagens.map(imagem => imagem.decode()));
+    window.print();
+    setImprimindo(false);
+  }
+
+  function tentarNovamente() {
+    setDados(null);
+    setTentativa(valor => valor + 1);
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-32 font-sans text-slate-900">
-      <div id="relatorio-pdf" className="bg-white max-w-2xl mx-auto p-6">
-        {/* Header */}
-        <div className="text-center mb-6 pb-6 border-b-2 border-slate-100">
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
-            Relatório de Vistoria
-          </p>
-          <h2 className="text-3xl font-black uppercase text-slate-900 leading-tight">
-            {meta.ubs || 'Unidade não informada'}
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            {meta.encarregada} · {meta.dataVistoria.split('-').reverse().join('/')}
-          </p>
-        </div>
-
-        {/* Nota */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-slate-900 text-white p-5 rounded-3xl text-center min-w-[120px]">
-            <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest mb-1">Nota Final</p>
-            <span className="text-5xl font-black">{meta.notaVistoria}</span>
-          </div>
-        </div>
-
-        {/* Bento read-only grid */}
-        <div className="grid grid-cols-2 gap-2 mb-8">
-          {PERGUNTAS.map(p => {
-            const r = respostas[p.id];
-            return (
-              <div
-                key={p.id}
-                className={`col-span-1 rounded-2xl p-3 ${
-                  r.status === 'sim' ? 'bg-teal-700 text-white' :
-                  r.status === 'nao' ? 'bg-red-700 text-white' :
-                  'bg-slate-200 text-slate-600'
-                }`}
-              >
-                <p className="text-[10px] font-black uppercase leading-tight">{p.label}</p>
-                <p className="mt-1 text-lg">
-                  {r.status === 'sim' ? '✅' : r.status === 'nao' ? '🚫' : '⚠️'}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Falhas */}
-        <section className="mb-8">
-          <h3 className="font-black text-lg border-l-8 border-red-500 pl-3 uppercase text-red-700 mb-4">
-            Falhas Registradas
-          </h3>
-          {irregularidades.length === 0
-            ? (
-              <div className="p-8 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold uppercase text-xs border border-slate-200">
-                Unidade Conforme ✅
-              </div>
-            )
-            : (
-              <div className="space-y-4">
-                {irregularidades.map(p => (
-                  <div key={p.id} className={`p-4 rounded-2xl border-2 ${p.requiresVolante ? 'border-amber-300 bg-amber-50' : 'border-red-100 bg-red-50'}`}>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <p className="font-black text-xs uppercase text-slate-700">{p.label}</p>
-                      {p.requiresVolante && (
-                        <span className="shrink-0 bg-amber-400 text-amber-900 text-[9px] font-black uppercase px-2 py-1 rounded-lg flex items-center gap-1 whitespace-nowrap">
-                          🚐 Equipe Volante
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-slate-500 italic">
-                      "{p.reason || 'Sem justificativa.'}"
-                    </p>
-                    {(p.photoBefore || p.photo) && (
-                      <div className={`mt-3 ${p.photoBefore && p.photo ? 'grid grid-cols-2 gap-2' : ''}`}>
-                        {p.photoBefore && (
-                          <div>
-                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Antes</p>
-                            <img src={p.photoBefore} className="rounded-xl w-full max-h-36 object-cover border border-slate-200" alt="Antes" />
-                          </div>
-                        )}
-                        {p.photo && (
-                          <div>
-                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Depois</p>
-                            <img src={p.photo} className="rounded-xl w-full max-h-36 object-cover border border-red-200" alt="Depois" />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )
-          }
-        </section>
-
-        {/* Considerações */}
-        {meta.consideracoesGerais && (
-          <section className="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <p className="text-xs font-black uppercase text-slate-500 mb-2">Considerações Gerais</p>
-            <p className="text-sm text-slate-600 italic">{meta.consideracoesGerais}</p>
-          </section>
-        )}
-
-        {/* Retorno */}
-        <div className="text-center mt-8 pt-6 border-t border-slate-100">
-          <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest mb-1">
-            Previsão de Retorno
-          </p>
-          <p className="text-xl font-black uppercase text-slate-800">
-            {meta.dataRetorno
-              ? new Date(meta.dataRetorno + 'T12:00:00').toLocaleDateString('pt-BR')
-              : 'A DEFINIR'
-            }
-          </p>
-        </div>
-      </div>
-
-      {/* Fixed action buttons */}
-      <div className="print:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 flex gap-3 shadow-lg z-50">
-        <button
-          onClick={() => window.print()}
-          className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2 active:scale-95"
-        >
-          <Printer size={16} /> PDF
+    <main className="app-content field-content report-screen">
+      {!dados && <p className="field-card text-sm print:hidden" role="status">Preparando dados do relatório…</p>}
+      {dados?.indisponiveis.length > 0 && <button type="button" className="app-secondary mb-3 print:hidden"
+        onClick={tentarNovamente}>Tentar carregar dados novamente</button>}
+      {(dados || recente) && <DocumentoVistoria visita={visita} itens={itens} equipe={equipe} fotos={fotos}
+        anteriores={dados?.anteriores ?? []} itensAnteriores={dados?.itensAnteriores ?? []}
+        indisponiveis={dados?.indisponiveis} />}
+      <div className="report-actions print:hidden">
+        <button type="button" onClick={imprimir} disabled={!dados || imprimindo} className="app-primary flex-1">
+          <Printer size={17} aria-hidden="true" /> {imprimindo ? 'Preparando…' : 'PDF'}
         </button>
-        <button
-          onClick={compartilharWhatsApp}
-          className="flex-1 bg-green-600 text-white py-4 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2 active:scale-95"
-        >
-          <MessageSquare size={16} /> WhatsApp
+        <button type="button" onClick={compartilharWhatsApp} disabled={!dados} className="app-secondary flex-1">
+          <MessageSquare size={17} aria-hidden="true" /> WhatsApp
         </button>
-        <button
-          onClick={resetVistoria}
-          className="flex-1 bg-white text-slate-700 py-4 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2 border border-slate-200 active:scale-95"
-        >
-          <ArrowLeft size={16} /> Nova
+        <button type="button" onClick={onVoltar ?? resetVistoria} className="app-secondary flex-1">
+          <ArrowLeft size={17} aria-hidden="true" /> {arquivada ? 'Histórico' : 'Nova'}
         </button>
       </div>
-    </div>
+    </main>
   );
 }
