@@ -5,6 +5,14 @@ import { sugerirTreinamentos } from '../lib/treinamento';
 export const usaTreinamento = import.meta.env.VITE_TREINAMENTO_IA === 'true';
 const declaracao = 'Confirmo que participei do treinamento com o conteúdo apresentado acima.';
 
+function iconeProcedimento(id) {
+  if (id.startsWith('diluicao-')) return '🧪';
+  if (id.includes('residuos') || id.startsWith('lixeira-')) return '🗑️';
+  if (id.startsWith('contaminacao-')) return '🧤';
+  if (id.startsWith('classificacao-')) return '🏥';
+  return '🧹';
+}
+
 function Assinatura({ pessoa, onSalvar, onCancelar }) {
   const tela = useRef(null);
   const ponto = useRef(null);
@@ -62,7 +70,11 @@ export function RegistroTreinamento({ treinamento }) {
   return <section className="report-section">
     <h2>Treinamento em campo</h2>
     <p className="report-text"><strong>{treinamento.titulo}</strong></p>
-    <p className="report-muted">{treinamento.fonte} · {treinamento.versao}</p>
+    <p className="report-muted">
+      {typeof treinamento.fonteUrl === 'string' && treinamento.fonteUrl.startsWith('https://')
+        ? <a className="underline" href={treinamento.fonteUrl} target="_blank" rel="noreferrer">{treinamento.fonte}</a>
+        : treinamento.fonte} · {treinamento.versao}
+    </p>
     <p className="report-text mt-2">{treinamento.roteiro}</p>
     <p className="report-muted mt-2">{treinamento.participantes.length} assinatura(s) de participação registradas.</p>
     <ul className="report-list">{treinamento.participantes.map(pessoa => <li key={pessoa.id}>{pessoa.nome}</li>)}</ul>
@@ -77,7 +89,7 @@ export function RegistroTreinamento({ treinamento }) {
   </section>;
 }
 
-export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, perguntas, respostas, visivel }) {
+export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, perguntas, respostas, onClassificar, visivel }) {
   const [aberto, setAberto] = useState(false);
   const [procedimentos, setProcedimentos] = useState(null);
   const [procedimentoId, setProcedimentoId] = useState('');
@@ -92,8 +104,11 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
     let ativo = true;
     async function carregar() {
       try {
-        const { data, error } = await supabase.from('procedimentos_treinamento')
-          .select('id, titulo, fonte, versao, conteudo').eq('ativo', true).order('titulo');
+        const campos = 'id, titulo, fonte, versao, conteudo';
+        const consultar = colunas => supabase.from('procedimentos_treinamento')
+          .select(colunas).eq('ativo', true).order('titulo');
+        let { data, error } = await consultar(`${campos}, fonte_url`);
+        if (error?.code === '42703') ({ data, error } = await consultar(campos));
         if (error) throw error;
         if (ativo) setProcedimentos(data);
       } catch {
@@ -105,7 +120,7 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
   }, [visivel, procedimentos, tentativa]);
 
   const procedimento = procedimentos?.find(item => item.id === procedimentoId);
-  const sugestoes = procedimentos ? sugerirTreinamentos(perguntas, respostas, procedimentos) : [];
+  const recomendacoes = procedimentos && sugerirTreinamentos(perguntas, respostas, procedimentos);
   const porProcedimento = new Map(treinamentos.map(item => [item.procedimentoId, item]));
   const treinamento = porProcedimento.get(procedimentoId);
   const participantes = treinamento?.participantes ?? [];
@@ -140,7 +155,7 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
     if (!procedimento || treinamento || !roteiro.trim() || roteiro.trim().length > 6000) return;
     const novo = {
       procedimentoId: procedimento.id, titulo: procedimento.titulo, fonte: procedimento.fonte,
-      versao: procedimento.versao, roteiro: roteiro.trim(), declaracao, participantes: [],
+      fonteUrl: procedimento.fonte_url, versao: procedimento.versao, roteiro: roteiro.trim(), declaracao, participantes: [],
     };
     onAlterar(atuais => [...atuais, novo]);
   }
@@ -161,7 +176,9 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
   }
 
   return <section id="treinamento-vistoria" className="field-card space-y-3">
-    <h2 className="field-section">Treinamento em campo</h2>
+    <h2 className="field-section flex items-center gap-2 rounded-xl bg-indigo-50 p-3 text-indigo-950">
+      <span aria-hidden="true">📚</span> Treinamento em campo
+    </h2>
     {erro && <p role="alert" className="text-sm text-red-800">{erro}</p>}
     {!procedimentos && (erro
       ? <button type="button" className="app-secondary" onClick={() => {
@@ -169,28 +186,47 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
         setTentativa(valor => valor + 1);
       }}>Tentar novamente</button>
       : <p role="status" className="text-sm">Carregando procedimentos…</p>)}
-    {procedimentos && <>
-      {sugestoes.length > 0 ? <div className="space-y-2">
-        <h3 className="text-sm font-bold">Sugestões pelo resultado da vistoria</h3>
-        {sugestoes.map(({ procedimento: sugerido, item }) => <div key={sugerido.id} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-          <p className="text-sm font-semibold">{sugerido.titulo}</p>
-          <p className="text-xs text-slate-700">Item não conforme · {item}</p>
+    {recomendacoes && <>
+      {recomendacoes.classificar.length > 0 && <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <h3 className="text-sm font-bold"><span aria-hidden="true">🔎 </span>Confirme o motivo da não conformidade</h3>
+        <p className="text-sm text-slate-700">Escolha um tema apenas se o apontamento envolver a técnica de execução.</p>
+        {recomendacoes.classificar.map(({ id, label, opcoes }) => <label key={id} className="grid gap-1 text-sm font-semibold">
+          {label}
+          <select className="app-input" value={respostas[id].temaTreinamento ?? ''} onChange={e => onClassificar(id, e.target.value)}>
+            <option value="">Selecione o motivo</option>
+            {opcoes.map(item => <option key={item.id} value={item.id}>Técnica · {item.titulo}</option>)}
+            {id === 'sujeiraDerramamento' && <option value="quimico">Derramamento químico · seguir procedimento da unidade</option>}
+            <option value="sem_pop">Falha técnica sem tema correspondente</option>
+            <option value="operacional">Material, manutenção, agenda ou outro motivo operacional</option>
+          </select>
+        </label>)}
+      </div>}
+      {recomendacoes.sugestoes.length > 0 ? <div className="space-y-2">
+        <h3 className="text-sm font-bold"><span aria-hidden="true">💡 </span>Sugestões pelo resultado da vistoria</h3>
+        {recomendacoes.sugestoes.map(({ procedimento: sugerido, itens }) => <div key={sugerido.id} className="space-y-2 rounded-lg border border-sky-200 bg-sky-50 p-3">
+          <p className="text-sm font-semibold text-sky-950"><span aria-hidden="true">{iconeProcedimento(sugerido.id)} </span>{sugerido.titulo}</p>
+          <p className="text-xs text-slate-700">Não conformidade · {itens.join(' · ')}</p>
           <button type="button" className="app-secondary" disabled={ocupado || !equipe.length}
             onClick={() => escolherProcedimento(sugerido.id)}>
             {porProcedimento.has(sugerido.id) ? 'Abrir treinamento registrado' : 'Selecionar treinamento'}
           </button>
         </div>)}
-      </div> : <p className="text-sm text-slate-700">Nenhuma não conformidade técnica do checklist corresponde a um procedimento liberado.</p>}
+      </div> : <p className="text-sm text-slate-700">Nenhuma sugestão de treinamento disponível para os motivos informados.</p>}
+      {recomendacoes.semPop.length > 0 && <div className="space-y-1 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">
+        <h3 className="font-bold"><span aria-hidden="true">⚠️ </span>Pontos técnicos sem POP específico liberado</h3>
+        <ul className="list-disc pl-5">{recomendacoes.semPop.map(item => <li key={item}>{item}</li>)}</ul>
+      </div>}
       {!equipe.length && <p className="text-sm text-slate-700">O posto precisa ter colaboradores vinculados para registrar assinaturas.</p>}
       {!aberto && equipe.length > 0 && procedimentos.length > 0 && <button type="button" className="app-secondary"
         onClick={() => setAberto(true)}>Escolher procedimento</button>}
     </>}
     {treinamentos.length > 0 && <div className="space-y-2">
-      <h3 className="text-sm font-bold">Treinamentos registrados nesta vistoria</h3>
+      <h3 className="text-sm font-bold"><span aria-hidden="true">✍️ </span>Treinamentos registrados nesta vistoria</h3>
       <ul className="space-y-2">{treinamentos.map(item => (
-        <li key={item.procedimentoId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2">
+        <li key={item.procedimentoId} className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ${item.participantes.length
+          ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}>
           <div className="text-sm">
-            <p className="font-semibold">{item.titulo}</p>
+            <p className="font-semibold"><span aria-hidden="true">{iconeProcedimento(item.procedimentoId)} </span>{item.titulo}</p>
             <p className={item.participantes.length ? 'text-emerald-800' : 'text-amber-900'}>
               {item.participantes.length ? `${item.participantes.length} assinatura(s)` : 'Aguardando assinatura'}
             </p>
@@ -213,6 +249,8 @@ export default function TreinamentoVistoria({ equipe, treinamentos, onAlterar, p
         <details className="rounded-lg border p-3 text-sm">
           <summary className="font-semibold">Consultar fonte · {procedimento.fonte}</summary>
           <p className="mt-2 whitespace-pre-wrap">{procedimento.conteudo}</p>
+          {procedimento.fonte_url && <a className="mt-2 inline-block font-semibold text-sky-800 underline"
+            href={procedimento.fonte_url} target="_blank" rel="noreferrer">Abrir referência oficial</a>}
         </details>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="app-secondary" disabled={ocupado} onClick={gerarRoteiro}>

@@ -65,3 +65,5 @@ As assinaturas ficam em memória durante a edição e são gravadas junto da fin
 Aplique `20261109000500_ampliar_catalogo_treinamento.sql` para incluir mais sete roteiros de referência do POP Saúde. Na avaliação final, a aplicação sugere somente os procedimentos liberados associados a uma não conformidade técnica do checklist. A associação explícita entre itens e procedimentos está em `cliente/src/lib/treinamento.js`. Os demais procedimentos liberados continuam disponíveis para escolha manual.
 
 Aplique `20261110000100_multiplos_treinamentos.sql` para finalizar uma vistoria com mais de um treinamento. Cada procedimento tem seu próprio roteiro e precisa de pelo menos uma assinatura. Os comprovantes de vistorias anteriores continuam disponíveis no Histórico.
+
+Aplique `20261110000200_catalogo_referencias_anvisa.sql` para liberar os quatro temas complementares e exibir links para as referências oficiais. O roteiro de contaminação biológica atende tanto à presença de matéria orgânica quanto a derramamentos identificados como biológicos. Derramamento químico exige o procedimento da unidade. As referências de resíduos orientam a consulta ao PGRSS do posto.

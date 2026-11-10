@@ -75,7 +75,10 @@ export default function VistoriaScreen() {
 
   function responder(pergunta, status) {
     updateResposta(pergunta.id, 'status', status);
-    if (status !== pergunta.trigger) updateResposta(pergunta.id, 'corrigidoNaVisita', false);
+    if (status !== pergunta.trigger) {
+      updateResposta(pergunta.id, 'corrigidoNaVisita', false);
+      updateResposta(pergunta.id, 'temaTreinamento', '');
+    }
   }
 
   function marcarColaborador(id, campos) {
@@ -209,6 +212,7 @@ export default function VistoriaScreen() {
 
         {usaTreinamento && perfil && equipeDaUnidade && <div key={meta.ubs} hidden={!revisao || contadores.pending > 0}>
           <TreinamentoVistoria equipe={equipeDaUnidade.colaboradores} treinamentos={treinamentos} onAlterar={setTreinamentos}
+            onClassificar={(id, tema) => updateResposta(id, 'temaTreinamento', tema)}
             perguntas={PERGUNTAS} respostas={respostas} visivel={revisao && contadores.pending === 0} />
         </div>}
 
