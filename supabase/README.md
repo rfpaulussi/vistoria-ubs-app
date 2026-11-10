@@ -50,3 +50,18 @@ Antes da troca, compare a quantidade de registros e confira amostras por unidade
 Por padrão, a função busca o nome oficial entre os postos ativos de SMS do contrato Mogi. Se o nome divergir ou houver mais de um posto com o mesmo nome, preencha `postos_demax.posto_id` com o UUID correto do Gestão para a unidade. A função usa esse UUID na consulta e o inclui no registro da vistoria.
 
 A conferência usa a lotação e os registros do dia em que a equipe foi consultada, no fuso de São Paulo. Atestados e faltas devem cobrir esse dia. Férias devem cobrir o dia e estar aprovadas, em curso ou concluídas. O indicador de advertência considera advertências verbais ou escritas marcadas como entregues com data de aplicação até a consulta. O relatório guarda os indicadores e o resultado informado na visita, permitindo consultá-los mesmo após uma movimentação no Gestão.
+
+## Piloto de assistência por IA e treinamento
+
+1. Aplique na ordem as migrações `20261109000300_assistencia_ia.sql` e `20261109000400_treinamento_vistoria.sql` no projeto Supabase da vistoria.
+2. Em **Edge Functions → Secrets**, adicione uma chave dedicada da Anthropic em `ANTHROPIC_API_KEY`. Opcionalmente, configure `ANTHROPIC_MODEL_VISTORIA` para selecionar um modelo compatível com a API de mensagens.
+3. Publique `assistencia-vistoria` no mesmo projeto. A função valida o token por meio da API de dados e reserva uma das 30 solicitações diárias disponíveis por perfil antes de chamar o provedor. Para publicar pela CLI, use `supabase functions deploy assistencia-vistoria --no-verify-jwt --project-ref <ref-da-vistoria>`. Pelo painel, use o arquivo `functions/assistencia-vistoria/index.ts` e desative **Verify JWT with legacy secret** na função publicada.
+4. Em **Preview**, habilite `VITE_REVISAO_IA=true` para revisão das anotações. Habilite também `VITE_TREINAMENTO_IA=true` e `VITE_CONFERENCIA_EQUIPE=true` para treinar e colher assinaturas da equipe do posto. Mantenha as variáveis Supabase já usadas na prévia.
+
+O catálogo apresenta somente procedimentos ativos. O piloto inclui uma orientação geral de diluição com base na página 14 do POP Saúde. O cartaz sobre lixeira infectante permanece inativo até conferência do procedimento aplicável e do plano de resíduos do posto. Cadastre mudanças no conteúdo como uma nova versão, com um novo identificador, para que o comprovante identifique a referência apresentada.
+
+As assinaturas ficam em memória durante a edição e são gravadas junto da finalização da vistoria. O Histórico usa a mesma política de acesso da vistoria para reabrir o conteúdo apresentado e os comprovantes. O PDF inclui o roteiro e os nomes de quem assinou. Os traços das assinaturas ficam disponíveis no relatório autenticado.
+
+Aplique `20261109000500_ampliar_catalogo_treinamento.sql` para incluir mais sete roteiros de referência do POP Saúde. Na avaliação final, a aplicação sugere somente os procedimentos liberados associados a uma não conformidade técnica do checklist. A associação explícita entre itens e procedimentos está em `cliente/src/lib/treinamento.js`. Os demais procedimentos liberados continuam disponíveis para escolha manual.
+
+Aplique `20261110000100_multiplos_treinamentos.sql` para finalizar uma vistoria com mais de um treinamento. Cada procedimento tem seu próprio roteiro e precisa de pelo menos uma assinatura. Os comprovantes de vistorias anteriores continuam disponíveis no Histórico.

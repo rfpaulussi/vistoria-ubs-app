@@ -84,6 +84,7 @@ export function AppProvider({ children, perfil }) {
   const [screen, setScreen] = useState(perfil?.papel === 'admin' ? 'gestao' : 'vistoria');
   const [vistoriaId, setVistoriaId] = useState(() => loadSaved(storageKey, 'vistoriaId', novoId));
   const [conferencia, setConferencia] = useState(() => loadSaved(storageKey, 'conferencia', () => null));
+  const [treinamentos, setTreinamentos] = useState([]);
   const [meta, setMeta] = useState(() => {
     const salva = loadSaved(storageKey, 'meta', novaMeta);
     return { ...salva, ubs: normalizarUnidade(salva.ubs) ?? '' };
@@ -127,6 +128,7 @@ export function AppProvider({ children, perfil }) {
     setMeta(novaMeta());
     setVistoriaId(novoId());
     setConferencia(null);
+    setTreinamentos([]);
     setTimer(0);
     timerActiveRef.current = true;
     setScreen(typeof destino === 'string' ? destino : 'vistoria');
@@ -145,6 +147,7 @@ export function AppProvider({ children, perfil }) {
       perfil, vistoriaId,
       meta, updateMeta,
       conferencia, setConferencia,
+      treinamentos, setTreinamentos,
       respostas, updateResposta,
       timer, pauseTimer, resumeTimer,
       resetVistoria,

@@ -5,6 +5,8 @@ import { UNIDADES } from '../lib/unidades';
 import BentoCard from '../components/BentoCard';
 import CardModal from '../components/CardModal';
 import ConferenciaEquipe from '../components/ConferenciaEquipe';
+import RevisaoIA, { usaRevisaoIA } from '../components/RevisaoIA';
+import TreinamentoVistoria, { usaTreinamento } from '../components/TreinamentoVistoria';
 import { salvarVistoria } from '../lib/sheets';
 import { salvarFirestore } from '../lib/firebase';
 import { salvarNoSupabase } from '../lib/vistorias';
@@ -21,7 +23,7 @@ const secoes = [
 export default function VistoriaScreen() {
   const {
     meta, updateMeta, respostas, updateResposta, contadores, PERGUNTAS, setScreen,
-    perfil, vistoriaId, resetVistoria, conferencia, setConferencia,
+    perfil, vistoriaId, resetVistoria, conferencia, setConferencia, treinamentos, setTreinamentos,
   } = useApp();
   const [modalId, setModalId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,8 @@ export default function VistoriaScreen() {
   const equipeDaUnidade = conferencia?.unidade === meta.ubs ? conferencia : null;
   const equipeCompleta = !conferirEquipe || (equipeDaUnidade && resumoEquipe(equipeDaUnidade).pendentes === 0);
   const identificacaoCompleta = unidadeValida && meta.encarregada.trim() && meta.notaVistoria !== null;
-  const canFinish = contadores.pending === 0 && identificacaoCompleta && equipeCompleta;
+  const treinamentoCompleto = treinamentos.every(item => item.participantes.length > 0);
+  const canFinish = contadores.pending === 0 && identificacaoCompleta && equipeCompleta && treinamentoCompleto;
 
   useEffect(() => {
     if (irPara === null) return;
@@ -84,12 +87,16 @@ export default function VistoriaScreen() {
 
   async function finalizar() {
     if (!canFinish || loading) return;
+    if (new TextEncoder().encode(JSON.stringify(treinamentos)).length > 780000) {
+      setErro('O registro das assinaturas ficou muito grande para salvar.');
+      return;
+    }
     setLoading(true);
     setErro('');
     try {
       if (perfil) {
         const finalizada = await salvarNoSupabase(
-          vistoriaId, meta, PERGUNTAS, respostas, conferirEquipe ? equipeDaUnidade : null,
+          vistoriaId, meta, PERGUNTAS, respostas, conferirEquipe ? equipeDaUnidade : null, treinamentos,
         );
         if (!finalizada) {
           resetVistoria('historico');
@@ -129,8 +136,10 @@ export default function VistoriaScreen() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1 text-sm font-semibold">Unidade
               <select className="app-input" value={unidadeValida ? meta.ubs : ''} onChange={e => {
+                if (treinamentos.length && !window.confirm('Trocar de posto descarta os treinamentos e as assinaturas desta visita. Continuar?')) return;
                 updateMeta('ubs', e.target.value);
                 setConferencia(null);
+                setTreinamentos([]);
               }}>
                 <option value="">Selecione a unidade</option>
                 {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
@@ -184,6 +193,7 @@ export default function VistoriaScreen() {
               onAnswer={status => responder(pergunta, status)}
               onReasonChange={(id, val) => updateResposta(id, 'reason', val)}
               onEvidencias={setModalId} corrigido={resposta.corrigidoNaVisita}
+              revisarComIA={Boolean(perfil && usaRevisaoIA)}
               onCorrigir={perfil ? (id, val) => updateResposta(id, 'corrigidoNaVisita', val) : undefined} />
             <div className="flex flex-wrap justify-between gap-2">
               <button type="button" className="app-secondary" disabled={indice === 0} onClick={() => abrir(indice - 1)}>
@@ -196,6 +206,11 @@ export default function VistoriaScreen() {
             </div>
           </>}
         </section>
+
+        {usaTreinamento && perfil && equipeDaUnidade && <div key={meta.ubs} hidden={!revisao || contadores.pending > 0}>
+          <TreinamentoVistoria equipe={equipeDaUnidade.colaboradores} treinamentos={treinamentos} onAlterar={setTreinamentos}
+            perguntas={PERGUNTAS} respostas={respostas} visivel={revisao && contadores.pending === 0} />
+        </div>}
 
         {revisao && <section className="field-card space-y-4">
           <button type="button" className="app-secondary" onClick={() => abrir(PERGUNTAS.length - 1)}>
@@ -215,11 +230,16 @@ export default function VistoriaScreen() {
             <textarea rows={3} className="app-input" value={meta.consideracoesGerais}
               onChange={e => updateMeta('consideracoesGerais', e.target.value)} />
           </label>
+          {perfil && usaRevisaoIA && <RevisaoIA texto={meta.consideracoesGerais}
+            onAplicar={texto => updateMeta('consideracoesGerais', texto)} />}
           {erro && <p role="alert" className="text-sm text-red-800">{erro}</p>}
           {contadores.pending > 0 && <button type="button" className="app-secondary" onClick={verPendentes}>Ver próximo item pendente</button>}
           {!identificacaoCompleta && contadores.pending === 0 && <p className="text-sm text-slate-600">Confira a identificação e selecione uma nota para finalizar.</p>}
           {conferirEquipe && unidadeValida && !equipeCompleta && <a className="app-secondary" href="#conferencia-equipe">
             Concluir conferência da equipe
+          </a>}
+          {!treinamentoCompleto && <a className="app-secondary" href="#treinamento-vistoria">
+            Confira os treinamentos que ainda estão sem assinatura
           </a>}
           <button type="button" className="app-primary w-full" onClick={finalizar} disabled={!canFinish || loading}>
             {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} aria-hidden="true" />}

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Camera, Check, CircleAlert, Minus } from 'lucide-react';
+import RevisaoIA from './RevisaoIA';
 
 export default function BentoCard({
-  pergunta, status, reason, hasPhoto, onAnswer, onReasonChange, onEvidencias, corrigido, onCorrigir,
+  pergunta, status, reason, hasPhoto, onAnswer, onReasonChange, onEvidencias, corrigido, onCorrigir, revisarComIA,
 }) {
   const { id, label, desc, trigger, critical, requiresVolante } = pergunta;
   const falhou = status === trigger;
@@ -45,6 +46,7 @@ export default function BentoCard({
             Observação
             <textarea className="app-input" rows={2} value={reason} onChange={e => onReasonChange(id, e.target.value)} />
           </label>
+          {revisarComIA && <RevisaoIA texto={reason} onAplicar={texto => onReasonChange(id, texto)} />}
           <button type="button" onClick={() => onEvidencias(id)} className="app-secondary">
             <Camera size={17} aria-hidden="true" /> {hasPhoto ? 'Ver evidências' : 'Adicionar evidência'}
           </button>

@@ -3,7 +3,7 @@ import { Printer, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import DocumentoVistoria from '../components/DocumentoVistoria';
 import { resumoEquipe, usaConferenciaEquipe } from '../lib/equipe';
-import { buscarConferenciaEquipe, buscarEvidencias, buscarItensRelatorio, buscarVistorias } from '../lib/vistorias';
+import { buscarConferenciaEquipe, buscarEvidencias, buscarItensRelatorio, buscarTreinamento, buscarVistorias } from '../lib/vistorias';
 import { apontamentosWhatsApp, formatarData, formatarNota, tituloPdfVistoria, visitasAnteriores } from '../lib/relatorio';
 
 function itensDaVisita(perguntas, respostas) {
@@ -32,9 +32,10 @@ async function carregarRelatorio(visita, lista, recente) {
     buscarItensRelatorio(visita.id),
     recente ? null : buscarConferenciaEquipe(visita.id),
     recente ? [] : buscarEvidencias(visita.id),
+    recente ? null : buscarTreinamento(visita.id),
   ]);
-  const [historico, itens, equipe, fotos] = dados.map(resultado => resultado.value);
-  const indisponiveis = ['histórico', 'apontamentos', 'conferência da equipe', 'evidências']
+  const [historico, itens, equipe, fotos, treinamento] = dados.map(resultado => resultado.value);
+  const indisponiveis = ['histórico', 'apontamentos', 'conferência da equipe', 'evidências', 'treinamento']
     .filter((_, i) => dados[i].status === 'rejected');
   const anteriores = visitasAnteriores(historico ?? [], visita);
   let itensAnteriores = [];
@@ -45,11 +46,11 @@ async function carregarRelatorio(visita, lista, recente) {
       indisponiveis.push('checklist da visita anterior');
     }
   }
-  return { anteriores, itens, equipe, fotos, itensAnteriores, indisponiveis };
+  return { anteriores, itens, equipe, fotos, treinamento, itensAnteriores, indisponiveis };
 }
 
 export default function RelatorioScreen({ arquivada, historico, onVoltar }) {
-  const { meta, respostas, PERGUNTAS, resetVistoria, perfil, conferencia, vistoriaId } = useApp();
+  const { meta, respostas, PERGUNTAS, resetVistoria, perfil, conferencia, treinamentos, vistoriaId } = useApp();
   const [visita] = useState(() => arquivada ?? ({
     id: perfil ? vistoriaId : null,
     ubs: meta.ubs,
@@ -132,6 +133,7 @@ export default function RelatorioScreen({ arquivada, historico, onVoltar }) {
       {dados?.indisponiveis.length > 0 && <button type="button" className="app-secondary mb-3 print:hidden"
         onClick={tentarNovamente}>Tentar carregar dados novamente</button>}
       {(dados || recente) && <DocumentoVistoria visita={visita} itens={itens} equipe={equipe} fotos={fotos}
+        treinamento={recente ? treinamentos : dados?.treinamento}
         anteriores={dados?.anteriores ?? []} itensAnteriores={dados?.itensAnteriores ?? []}
         indisponiveis={dados?.indisponiveis} />}
       <div className="report-actions print:hidden">

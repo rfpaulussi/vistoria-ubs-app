@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResultadoEquipe } from './ConferenciaEquipe';
+import { RegistroTreinamento } from './TreinamentoVistoria';
 import { agruparApontamentos, compararItens, formatarData, formatarNota, resultados } from '../lib/relatorio';
 
 const situacoes = {
@@ -129,7 +130,7 @@ function Evidencias({ fotos }) {
 }
 
 export default function DocumentoVistoria({
-  visita, itens, equipe, fotos, anteriores, itensAnteriores, indisponiveis = [],
+  visita, itens, equipe, fotos, treinamento, anteriores, itensAnteriores, indisponiveis = [],
 }) {
   const falhas = itens.filter(item => item.resultado === 'nao_conforme')
     .sort((a, b) => Number(a.corrigido_na_visita) - Number(b.corrigido_na_visita) || Number(b.critico) - Number(a.critico));
@@ -161,6 +162,9 @@ export default function DocumentoVistoria({
           : 'Sem conferência de equipe registrada para esta visita.'}</p>
       </>}
     </div>
+    {(Array.isArray(treinamento) ? treinamento : treinamento ? [treinamento] : []).map(item => (
+      <RegistroTreinamento key={item.procedimentoId} treinamento={item} />
+    ))}
     <Evidencias fotos={fotos} />
     <section className="report-section">
       <h2>Checklist da visita</h2>

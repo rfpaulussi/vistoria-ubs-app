@@ -70,7 +70,7 @@ async function enviarFotos(id, perguntas, respostas) {
   }
 }
 
-export async function salvarNoSupabase(id, meta, perguntas, respostas, conferencia) {
+export async function salvarNoSupabase(id, meta, perguntas, respostas, conferencia, treinamentos) {
   const campos = {
     unidade: meta.ubs.trim(),
     encarregada: meta.encarregada.trim(),
@@ -100,6 +100,7 @@ export async function salvarNoSupabase(id, meta, perguntas, respostas, conferenc
   await enviarFotos(id, perguntas, respostas);
   const finalizacao = { estado: 'finalizada', finalizada_em: new Date().toISOString() };
   if (conferencia) finalizacao.conferencia_equipe = conferencia;
+  if (treinamentos.length) finalizacao.treinamento = treinamentos.length === 1 ? treinamentos[0] : treinamentos;
   conferir(await supabase.from('vistorias')
     .update(finalizacao)
     .eq('id', id).eq('estado', 'rascunho').select('id').single());
@@ -124,6 +125,13 @@ export async function buscarConferenciaEquipe(id) {
   // Projetos anteriores à migração da equipe ainda podem gerar relatórios.
   if (consulta.error?.code === '42703') return null;
   return conferir(consulta).conferencia_equipe;
+}
+
+export async function buscarTreinamento(id) {
+  if (!supabase || !id) return null;
+  const consulta = await supabase.from('vistorias').select('treinamento').eq('id', id).single();
+  if (consulta.error?.code === '42703') return null;
+  return conferir(consulta).treinamento;
 }
 
 export async function buscarEvidencias(id) {

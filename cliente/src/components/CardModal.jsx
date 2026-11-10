@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { X, Camera, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import RevisaoIA, { usaRevisaoIA } from './RevisaoIA';
 
 function compressPhoto(dataUrl, callback) {
   const img = new Image();
@@ -19,7 +20,7 @@ function compressPhoto(dataUrl, callback) {
 }
 
 export default function CardModal({ perguntaId, onClose }) {
-  const { PERGUNTAS, respostas, updateResposta, pauseTimer, resumeTimer } = useApp();
+  const { PERGUNTAS, respostas, updateResposta, pauseTimer, resumeTimer, perfil } = useApp();
   const pergunta = PERGUNTAS.find(p => p.id === perguntaId);
   const resposta = respostas[perguntaId];
   const fileRef = useRef(null);
@@ -75,6 +76,10 @@ export default function CardModal({ perguntaId, onClose }) {
           value={resposta.reason}
           onChange={e => updateResposta(perguntaId, 'reason', e.target.value)}
         />
+
+        {perfil && usaRevisaoIA && <div className="mb-4">
+          <RevisaoIA texto={resposta.reason} onAplicar={texto => updateResposta(perguntaId, 'reason', texto)} />
+        </div>}
 
         {/* Antes / Depois */}
         <div className="grid grid-cols-2 gap-2 mb-3">
