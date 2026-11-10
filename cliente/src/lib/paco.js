@@ -32,14 +32,25 @@ export async function carregarRoteiroPaco() {
   return dados(await supabase.from('roteiro_paco').select('rotina').order('id')).map(row => row.rotina);
 }
 
-export async function carregarVistoriasPaco(inicio, fim) {
+const semAcompanhamento = erro => ['42P01', 'PGRST205'].includes(erro?.code);
+
+export async function carregarVistoriasPaco(inicio, fim, pendencias = false) {
   const resultado = [];
   const pagina = 100;
-  for (let offset = 0; ; offset += pagina) {
-    const linhas = dados(await supabase.from('vistorias_paco').select('*')
-      .gte('registrada_em', inicio).lt('registrada_em', fim)
-      .order('registrada_em', { ascending: false }).order('id')
-      .range(offset, offset + pagina - 1));
+  let origem = 'acompanhamento_paco';
+  for (;;) {
+    const offset = resultado.length;
+    const consulta = supabase.from(origem).select('*');
+    if (pendencias) consulta.gt('total_pendencias', 0);
+    else consulta.gte('registrada_em', inicio).lt('registrada_em', fim);
+    const resposta = await consulta.order('registrada_em', { ascending: false }).order('id')
+      .range(offset, offset + pagina - 1);
+    if (!offset && semAcompanhamento(resposta.error) && origem === 'acompanhamento_paco') {
+      if (pendencias) throw new Error('A aba Pendências precisa da atualização do banco do Paço.');
+      origem = 'vistorias_paco';
+      continue;
+    }
+    const linhas = dados(resposta);
     resultado.push(...linhas);
     if (linhas.length < pagina) return resultado;
   }
@@ -65,16 +76,31 @@ export async function salvarVistoriaPaco(id, campos, fotos) {
   }).eq('id', id).is('registrada_em', null).select('id').single());
 }
 
+export async function registrarRetornoPaco(vistoriaId, itemId, { id, arquivo }) {
+  const caminho = vistoriaId + '/retorno-' + itemId + '-' + id;
+  const { error: falhaEnvio } = await supabase.storage.from(BUCKET).upload(caminho, arquivo, {
+    contentType: 'image/jpeg',
+  });
+  // A foto pode já estar no bucket se a confirmação anterior falhou.
+  const resposta = await supabase.rpc('registrar_retorno_paco', {
+    p_vistoria_id: vistoriaId, p_item_id: itemId, p_foto_id: id,
+  });
+  if (resposta.error && falhaEnvio) throw falhaEnvio;
+  dados(resposta);
+}
+
 export async function carregarFotosPaco(vistoria) {
   const fotos = tipos.filter(tipo => vistoria['foto_' + tipo]).map(tipo => ({ tipo, chave: tipo }));
   for (const item of vistoria.itens ?? []) {
     for (const tipo of tipos) {
       if (item['foto_' + tipo]) fotos.push({ tipo, itemId: item.id, chave: chaveFotoItem(item.id, tipo) });
     }
+    const caminho = vistoria.retornos?.[item.id]?.foto_caminho;
+    if (caminho) fotos.push({ tipo: 'depois', itemId: item.id, chave: caminho, caminho });
   }
   if (!fotos.length) return [];
   const links = dados(await supabase.storage.from(BUCKET).createSignedUrls(
-    fotos.map(foto => vistoria.id + '/' + foto.chave), 600,
+    fotos.map(foto => foto.caminho ?? vistoria.id + '/' + foto.chave), 600,
   ));
   return fotos.map((foto, index) => ({ ...foto, url: links[index]?.signedUrl }));
 }

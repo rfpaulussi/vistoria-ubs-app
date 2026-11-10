@@ -4,7 +4,7 @@ import { consultarEquipe } from '../lib/equipe';
 import CampoTextoPaco from '../components/CampoTextoPaco';
 import {
   UNIDADE_PACO, acessos, carregarFotosPaco, carregarRoteiroPaco, carregarVistoriasPaco,
-  chaveFotoItem, frequencias, prepararFotoPaco, qualidades, salvarVistoriaPaco,
+  chaveFotoItem, frequencias, prepararFotoPaco, qualidades, registrarRetornoPaco, salvarVistoriaPaco,
 } from '../lib/paco';
 import { perguntasDoSetor, qualidadeDosItens, resultadosItens } from '../lib/pacoChecklist';
 import PacoPainel, { diaPaco, periodosPaco } from './PacoPainel';
@@ -17,6 +17,7 @@ const rotuloData = data => new Intl.DateTimeFormat('pt-BR', {
 }).format(new Date(data));
 const equipeVazia = { previsto: '', cobertura: '', presentes: [] };
 const tiposFoto = ['antes', 'depois'];
+const tomPergunta = indice => ['verde', 'azul', 'lilas'][indice % 3];
 const normalizarBusca = texto => texto.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR').trim();
 
 function textoRevisao(revisao) {
@@ -60,9 +61,15 @@ function Etapa({ numero, titulo, Icone, children }) {
   </section>;
 }
 
-function Avaliacao({ nome, titulo, valor, onChange, opcoes }) {
+function NumeroPergunta({ indice }) {
+  return <span className="paco-pergunta-numero" aria-hidden="true">{String(indice + 1).padStart(2, '0')}</span>;
+}
+
+function Avaliacao({ nome, titulo, valor, onChange, opcoes, indice }) {
   return <fieldset className="paco-avaliacao">
-    <legend>{titulo}</legend>
+    <legend>{indice === undefined ? titulo : <span className="paco-pergunta-titulo">
+      <NumeroPergunta indice={indice} /><span>{titulo}</span>
+    </span>}</legend>
     <div className="paco-respostas" data-opcoes={Object.keys(opcoes).length}>
       {Object.entries(opcoes).map(([chave, rotulo], index) => <label key={chave} data-tom={['ok', 'alerta'][index] ?? 'neutro'}>
         <input type="radio" name={nome} value={chave} checked={valor === chave} required
@@ -346,7 +353,7 @@ function Formulario({ roteiro, onSalvo, ativo }) {
       }, bloqueada ? {} : fotos);
       trocarSetor('');
       setId(crypto.randomUUID());
-      onSalvo();
+      onSalvo(itens.filter(item => item.resultado === 'precisa_corrigir' && !item.foto_depois).length);
     } catch (falha) {
       if (['42703', 'PGRST204'].includes(falha.code)) {
         setErro('O banco do piloto precisa da atualização do checklist para salvar esta vistoria.');
@@ -399,8 +406,8 @@ function Formulario({ roteiro, onSalvo, ativo }) {
           <Avaliacao nome="frequencia" titulo="Frequência observada" valor={frequencia} onChange={setFrequencia}
             opcoes={{ conforme: 'Conforme o roteiro', fora_do_previsto: 'Fora do previsto', nao_verificada: 'Não verificada' }} />
           <p className="paco-muted" aria-live="polite">{respondidas} de {perguntas.length} perguntas respondidas</p>
-          {perguntas.map(({ id: idItem, pergunta }) => <div key={idItem} className="paco-item">
-            <Avaliacao nome={'qualidade-' + idItem} titulo={pergunta} valor={respostas[idItem]?.resultado}
+          {perguntas.map(({ id: idItem, pergunta }, indice) => <div key={idItem} className="paco-item" data-pergunta={tomPergunta(indice)}>
+            <Avaliacao nome={'qualidade-' + idItem} titulo={pergunta} indice={indice} valor={respostas[idItem]?.resultado}
               onChange={resultado => atualizarResposta(idItem, { resultado })} opcoes={resultadosItens} />
             {respostas[idItem]?.resultado === 'precisa_corrigir' && <>
               <CampoTextoPaco rotulo="O que precisa ser corrigido?" limite={1000} obrigatorio
@@ -413,6 +420,9 @@ function Formulario({ roteiro, onSalvo, ativo }) {
                   onSelecionar={evento => selecionarFoto(evento, chave)}
                   onRemover={() => setFotos(atuais => ({ ...atuais, [chave]: null }))} />;
               })}</div>
+              {!fotos[chaveFotoItem(idItem, 'depois')] && <p className="paco-pendente">
+                <Clock3 size={15} aria-hidden="true" /> Se a correção ficar para depois, conclua este item na aba Pendências.
+              </p>}
             </>}
           </div>)}
         </>}
@@ -451,12 +461,63 @@ function GaleriaPaco({ fotos }) {
   </figure>)}</div>;
 }
 
-function Detalhe({ vistoria }) {
+function RegistrarCorrecao({ vistoriaId, itemId, onSalvo }) {
+  const [foto, setFoto] = useState(null);
+  const [preparando, setPreparando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  async function selecionar(evento) {
+    const arquivo = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!arquivo) return;
+    setErro('');
+    setFoto(null);
+    setPreparando(true);
+    try {
+      setFoto({ id: crypto.randomUUID(), arquivo: await prepararFotoPaco(arquivo) });
+    } catch {
+      setErro('Não foi possível abrir a imagem. Escolha outra foto.');
+    } finally {
+      setPreparando(false);
+    }
+  }
+
+  async function concluir() {
+    setSalvando(true);
+    setErro('');
+    try {
+      await registrarRetornoPaco(vistoriaId, itemId, foto);
+      onSalvo();
+    } catch {
+      setErro('Não foi possível concluir a correção. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return <fieldset className="paco-retorno" disabled={preparando || salvando}>
+    <legend className="text-sm font-semibold">Registrar correção</legend>
+    <p className="paco-muted">Fotografe o mesmo ponto após a limpeza.</p>
+    <CartaoFoto tipo="depois" foto={foto?.arquivo} processando={preparando} onSelecionar={selecionar} onRemover={() => setFoto(null)} />
+    {erro && <p role="alert" className="paco-erro">{erro}</p>}
+    <button type="button" className="app-primary" disabled={!foto} onClick={concluir}>
+      <Check size={16} aria-hidden="true" /> {salvando ? 'Salvando…' : 'Concluir correção'}
+    </button>
+  </fieldset>;
+}
+
+const itemPendente = (item, retornos) => item.resultado === 'precisa_corrigir' && !item.foto_depois && !Object.hasOwn(retornos, item.id);
+
+function Detalhe({ vistoria, podeCorrigir, soPendencias, onCorrigida }) {
   const [fotos, setFotos] = useState(null);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const itens = vistoria.itens ?? [];
-  const total = [vistoria, ...itens].reduce((soma, item) => soma + tiposFoto.filter(tipo => item['foto_' + tipo]).length, 0);
+  const retornos = vistoria.retornos ?? {};
+  const pendencias = vistoria.total_pendencias ?? 0;
+  const total = [vistoria, ...itens].reduce((soma, item) => soma + tiposFoto.filter(tipo => item['foto_' + tipo]).length, 0)
+    + Object.keys(retornos).length;
   async function abrirFotos() {
     if (carregando) return;
     setCarregando(true);
@@ -477,7 +538,11 @@ function Detalhe({ vistoria }) {
         <strong>{vistoria.rotina_registrada.local}</strong>
         <p>{grupoDe(vistoria.rotina_registrada)} · {rotuloData(vistoria.registrada_em)}</p>
       </div>
-      {total > 0 && <span className="paco-contagem-fotos"><Camera size={15} aria-hidden="true" /> {total} {total === 1 ? 'foto' : 'fotos'}</span>}
+      <span className="paco-registro-indicadores">
+        {pendencias > 0 && <span className="paco-pendente"><Clock3 size={15} aria-hidden="true" />
+          {pendencias} {pendencias === 1 ? 'pendência' : 'pendências'}</span>}
+        {total > 0 && <span className="paco-contagem-fotos"><Camera size={15} aria-hidden="true" /> {total} {total === 1 ? 'foto' : 'fotos'}</span>}
+      </span>
     </summary>
     <div className="paco-registro-corpo">
     <p className="text-sm">{vistoria.encarregado_nome}</p>
@@ -494,13 +559,21 @@ function Detalhe({ vistoria }) {
     </div>}
     <Roteiro rotina={vistoria.rotina_registrada} />
     {itens.length > 0 && <div className="space-y-2">
-      <h3 className="text-sm font-semibold">Itens vistoriados</h3>
-      {itens.map(item => <section key={item.id} className="paco-item">
-        <h4 className="text-sm font-semibold">{item.pergunta}</h4>
-        <p className="paco-muted">{resultadosItens[item.resultado]}</p>
-        {item.observacao && <p className="text-sm whitespace-pre-wrap">{item.observacao}</p>}
-        <GaleriaPaco fotos={(fotos ?? []).filter(foto => foto.itemId === item.id)} />
-      </section>)}
+      <h3 className="text-sm font-semibold">{soPendencias ? 'Itens aguardando correção' : 'Itens vistoriados'}</h3>
+      {itens.map((item, indice) => {
+        const pendente = vistoria.retornos && itemPendente(item, retornos);
+        if (soPendencias && !pendente) return null;
+        const corrigidaEm = retornos[item.id]?.corrigida_em ?? (item.foto_depois ? vistoria.registrada_em : null);
+        return <section key={item.id} className="paco-item" data-pergunta={tomPergunta(indice)}>
+          <h4 className="paco-pergunta-titulo text-sm font-semibold"><NumeroPergunta indice={indice} />{item.pergunta}</h4>
+          <p className="paco-muted">{resultadosItens[item.resultado]}</p>
+          {pendente && <p className="paco-pendente"><Clock3 size={15} aria-hidden="true" /> Aguardando correção</p>}
+          {corrigidaEm && <p className="paco-corrigido"><Check size={15} aria-hidden="true" /> Correção registrada em {rotuloData(corrigidaEm)}</p>}
+          {item.observacao && <p className="text-sm whitespace-pre-wrap">{item.observacao}</p>}
+          <GaleriaPaco fotos={(fotos ?? []).filter(foto => foto.itemId === item.id)} />
+          {pendente && podeCorrigir && <RegistrarCorrecao vistoriaId={vistoria.id} itemId={item.id} onSalvo={onCorrigida} />}
+        </section>;
+      })}
     </div>}
     {carregando && <p role="status" className="paco-muted">Carregando evidências…</p>}
     {erro && <p role="alert" className="text-sm text-red-800">{erro}</p>}
@@ -530,26 +603,32 @@ export default function PacoScreen({ perfil }) {
   const inicioConsulta = pagina === 'historico' && inicioHistorico < periodos.primeiro ? inicioHistorico : periodos.primeiro;
   const fimConsulta = periodos.proximo;
   const painel = pagina === 'painel';
+  const pendencias = pagina === 'pendencias';
 
   useEffect(() => {
     if (!perfil?.paco) return;
     let ativo = true;
     setRegistros(null);
     setErro('');
-    Promise.all([carregarRoteiroPaco(), carregarVistoriasPaco(inicioConsulta + 'T00:00:00-03:00', fimConsulta + 'T00:00:00-03:00')])
+    Promise.all([carregarRoteiroPaco(), carregarVistoriasPaco(
+      inicioConsulta + 'T00:00:00-03:00', fimConsulta + 'T00:00:00-03:00', pendencias,
+    )])
       .then(([itens, visitas]) => {
         if (!ativo) return;
         setRoteiro(itens);
         setRegistros(visitas);
       })
-      .catch(() => { if (ativo) setErro('Não foi possível carregar os dados do Paço.'); });
+      .catch(falha => {
+        if (ativo) setErro(falha instanceof Error ? falha.message : 'Não foi possível carregar os dados do Paço.');
+      });
     return () => { ativo = false; };
-  }, [perfil?.paco, inicioConsulta, fimConsulta, versao]);
+  }, [perfil?.paco, inicioConsulta, fimConsulta, pendencias, versao]);
 
   if (!perfil?.paco) return <p className="field-card">O acesso ao Paço precisa ser liberado pela administração.</p>;
   const grupos = [...new Set((roteiro ?? []).map(grupoDe))];
   const filtrados = (registros ?? []).filter(item => !grupo || grupoDe(item.rotina_registrada) === grupo);
   const visiveis = filtrados.filter(item => {
+    if (pendencias) return item.total_pendencias > 0;
     const dia = diaPaco(item.registrada_em);
     return painel ? dia >= periodos[periodo].inicio && (!diaSelecionado || dia === diaSelecionado) : dia >= inicioHistorico;
   });
@@ -567,16 +646,19 @@ export default function PacoScreen({ perfil }) {
       <button type="button" aria-pressed={painel} onClick={() => mostrarPagina('painel')}>
         <Activity size={17} aria-hidden="true" /> Painel
       </button>
+      <button type="button" aria-pressed={pendencias} onClick={() => mostrarPagina('pendencias')}>
+        <Clock3 size={17} aria-hidden="true" /> Pendências
+      </button>
       <button type="button" aria-pressed={pagina === 'historico'} onClick={() => mostrarPagina('historico')}>
         <History size={17} aria-hidden="true" /> Histórico
       </button>
     </div>
     {aviso && <p role="status" className="paco-sucesso"><Check size={17} aria-hidden="true" /> {aviso}</p>}
     {campo && <div hidden={pagina !== 'nova'}>
-      {roteiro?.length > 0 ? <Formulario roteiro={roteiro} ativo={pagina === 'nova'} onSalvo={() => {
-        setAviso('Vistoria registrada.');
+      {roteiro?.length > 0 ? <Formulario roteiro={roteiro} ativo={pagina === 'nova'} onSalvo={total => {
+        setAviso(total ? `Vistoria registrada com ${total} ${total === 1 ? 'item pendente' : 'itens pendentes'}.` : 'Vistoria registrada.');
         setVersao(valor => valor + 1);
-        mostrarPagina('historico');
+        mostrarPagina(total ? 'pendencias' : 'historico');
       }} /> : <section className="paco-card">
         {erro ? <p role="alert">{erro} <button className="underline" onClick={() => setVersao(v => v + 1)}>Tentar novamente</button></p>
           : <p role="status">Carregando roteiro…</p>}
@@ -584,15 +666,16 @@ export default function PacoScreen({ perfil }) {
     </div>}
     <section className="paco-card space-y-4" hidden={pagina === 'nova'}>
       <div className="paco-intro">
-        <h2>{painel ? 'Termômetro de vistorias' : campo ? 'Minhas vistorias no Paço' : 'Histórico do Paço'}</h2>
-        <p>{painel ? 'Acompanhe o ritmo das vistorias e o resultado das avaliações.' : 'Consulte os registros e as evidências.'}</p>
+        <h2>{pendencias ? 'Correções pendentes' : painel ? 'Termômetro de vistorias' : campo ? 'Minhas vistorias no Paço' : 'Histórico do Paço'}</h2>
+        <p>{pendencias ? 'Abra a vistoria para acompanhar os itens que aguardam a foto de depois.'
+          : painel ? 'Acompanhe o ritmo das vistorias e o resultado das avaliações.' : 'Consulte os registros e as evidências.'}</p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        {painel ? <Selecao rotulo="Período" valor={periodo}
+        {!pendencias && (painel ? <Selecao rotulo="Período" valor={periodo}
           onChange={valor => { if (valor) { setPeriodo(valor); setDiaSelecionado(''); } }}
           opcoes={{ dia: 'Hoje', semana: 'Esta semana', mes: 'Este mês' }} />
           : <Selecao rotulo="Período" valor={dias} onChange={valor => { if (valor) setDias(valor); }}
-            opcoes={{ 7: 'Últimos 7 dias', 30: 'Últimos 30 dias', 90: 'Últimos 90 dias' }} />}
+            opcoes={{ 7: 'Últimos 7 dias', 30: 'Últimos 30 dias', 90: 'Últimos 90 dias' }} />)}
         <Selecao rotulo="Pavimento e grupo" valor={grupo} onChange={setGrupo} vazio="Todos"
           opcoes={Object.fromEntries(grupos.map(item => [item, item]))} />
       </div>
@@ -601,8 +684,13 @@ export default function PacoScreen({ perfil }) {
           {painel && <PacoPainel registros={filtrados} hoje={hoje} periodos={periodos}
             periodo={periodo} diaSelecionado={diaSelecionado} selecionarDia={setDiaSelecionado} />}
           {painel && <h3 className="font-semibold">Registros e horários</h3>}
-          {!visiveis.length && <p className="text-sm">Nenhuma vistoria registrada no período para este filtro.</p>}
-          {visiveis.map(item => <Detalhe key={item.id} vistoria={item} />)}
+          {!visiveis.length && <p className="text-sm">{pendencias ? 'Nenhuma correção pendente para este filtro.'
+            : 'Nenhuma vistoria registrada no período para este filtro.'}</p>}
+          {visiveis.map(item => <Detalhe key={item.id} vistoria={item} soPendencias={pendencias}
+            podeCorrigir={campo && perfil.id === item.encarregado_id} onCorrigida={() => {
+              setAviso('Correção registrada. A foto de depois está no histórico da vistoria.');
+              setVersao(valor => valor + 1);
+            }} />)}
         </>}
     </section>
   </main>;
