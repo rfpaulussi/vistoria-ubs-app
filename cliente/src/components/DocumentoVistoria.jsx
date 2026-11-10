@@ -147,10 +147,6 @@ export default function DocumentoVistoria({
     </header>
     <Metricas visita={visita} itens={itens} />
     {indisponiveis.length > 0 && <p className="report-alert">Dados indisponíveis nesta emissão: {indisponiveis.join(', ')}.</p>}
-    {visita.consideracoesGerais && <section className="report-section report-overview">
-      <h2>Considerações da encarregada</h2>
-      <p className="report-text">{visita.consideracoesGerais}</p>
-    </section>}
     <Apontamentos falhas={falhas} legado={legado} dadosIndisponiveis={!itens.length} />
     <Evolucao visita={visita} anteriores={anteriores} itens={itens} itensAnteriores={itensAnteriores}
       historicoIndisponivel={indisponiveis.includes('histórico')} />
@@ -176,5 +172,9 @@ export default function DocumentoVistoria({
         </tr>)}</tbody>
       </table> : <p className="report-muted">Este registro não tem respostas detalhadas disponíveis.</p>}
     </section>
+    {visita.consideracoesGerais?.trim() && <section className="report-section report-overview">
+      <h2>Considerações finais da encarregada</h2>
+      <p className="report-text">{visita.consideracoesGerais.trim()}</p>
+    </section>}
   </article>;
 }

@@ -76,16 +76,19 @@ export function RegistroTreinamento({ treinamento }) {
         : treinamento.fonte} · {treinamento.versao}
     </p>
     <p className="report-text mt-2">{treinamento.roteiro}</p>
-    <p className="report-muted mt-2">{treinamento.participantes.length} assinatura(s) de participação registradas.</p>
-    <ul className="report-list">{treinamento.participantes.map(pessoa => <li key={pessoa.id}>{pessoa.nome}</li>)}</ul>
-    <details className="mt-2 print:hidden">
-      <summary className="cursor-pointer text-sm font-bold">Ver comprovantes de participação</summary>
-      <p className="text-sm">{treinamento.declaracao}</p>
-      {treinamento.participantes.map(pessoa => <figure key={pessoa.id} className="my-2 rounded-lg border p-2">
-        <figcaption className="text-sm font-semibold">{pessoa.nome} · {new Date(pessoa.assinadaEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</figcaption>
-        <img src={pessoa.assinatura} className="w-full max-w-xs" alt={`Assinatura de ${pessoa.nome}`} />
-      </figure>)}
-    </details>
+    <h3 className="report-signature-heading">Comprovantes de participação</h3>
+    <p className="report-muted">{treinamento.declaracao}</p>
+    <ul className="report-signatures">
+      {treinamento.participantes.map(pessoa => <li key={pessoa.id}>
+        <figure>
+          <figcaption>
+            <strong>{pessoa.nome}</strong>
+            <span>Assinatura em {new Date(pessoa.assinadaEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</span>
+          </figcaption>
+          <img src={pessoa.assinatura} alt={`Assinatura de ${pessoa.nome}`} />
+        </figure>
+      </li>)}
+    </ul>
   </section>;
 }
 

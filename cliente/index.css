@@ -173,8 +173,14 @@
 .report-metrics dd { font-size: 1.35rem; font-weight: 850; line-height: 1.25; margin-top: .15rem; }
 .report-section { margin-top: 1.25rem; }
 .report-section:empty { display: none; }
-.report-section h2 { font-size: 1.05rem; font-weight: 850; margin-bottom: .55rem; border-bottom: 1px solid var(--report-line); padding-bottom: .3rem; }
-.report-text { font-size: .86rem; line-height: 1.5; white-space: pre-wrap; }
+.report-section h2 { color: #164b60; font-size: 1.05rem; font-weight: 850; margin-bottom: .55rem; border-bottom: 1px solid var(--report-line); padding-bottom: .3rem; }
+.report-text { color: #243547; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
+.report-overview { padding: .85rem 1rem; border-left: 3px solid #205f75; background: #f0f6f8; border-radius: .35rem; }
+.report-signature-heading { color: #164b60; font-size: .9rem; font-weight: 800; margin: .8rem 0 .25rem; }
+.report-signatures li { margin-top: .45rem; padding: .55rem .7rem; border: 1px solid var(--report-line); border-radius: .45rem; }
+.report-signatures figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .15rem .75rem; font-size: .82rem; }
+.report-signatures figcaption span { color: var(--report-muted); }
+.report-signatures img { display: block; width: min(100%, 15rem); height: 3rem; object-fit: contain; object-position: left center; margin-top: .25rem; }
 .report-muted { color: var(--report-muted); font-size: .8rem; line-height: 1.5; }
 .report-alert { margin-top: .85rem; padding: .5rem .65rem; background: #fff3db; color: #754406; font-size: .8rem; }
 .report-finding { border: 1px solid var(--report-line); border-radius: .6rem; padding: .65rem .75rem; margin-top: .45rem; }
@@ -219,8 +225,9 @@
   .app-content.report-screen { max-width: none; padding: 0; }
   .report-content { border: 0; box-shadow: none; padding: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .report-header, .report-metrics, .report-finding, .report-evidence, .report-table tr,
-  .report-comparison > div { break-inside: avoid; }
-  .report-section h2, .report-table caption { break-after: avoid; }
+  .report-comparison > div, .report-signatures li { break-inside: avoid; }
+  .report-section h2, .report-table caption, .report-signature-heading { break-after: avoid; }
+  .report-overview { box-decoration-break: clone; }
   .report-section { margin-top: .95rem; }
   .report-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .report-metrics:has(> :nth-child(5)) { grid-template-columns: repeat(5, minmax(0, 1fr)); }

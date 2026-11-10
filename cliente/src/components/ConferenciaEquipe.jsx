@@ -8,6 +8,32 @@ const estilosResultado = {
   pendente: 'border-slate-200 border-l-slate-400 bg-slate-50/70',
 };
 
+function HorarioGestao({ turno }) {
+  if (turno === undefined) return null;
+  if (!turno) return <p className="report-muted">Sem horário vigente cadastrado no Gestão.</p>;
+
+  const faixa = (inicio, fim) => inicio && fim ? `${inicio.slice(0, 5)} às ${fim.slice(0, 5)}` : '';
+  const normal = faixa(turno.hora_entrada, turno.hora_saida_seg_qui);
+  const sexta = faixa(turno.hora_entrada_sex ?? turno.hora_entrada, turno.hora_saida_sex ?? turno.hora_saida_seg_qui);
+  const sabado = turno.hora_entrada_sabado || turno.hora_saida_sabado
+    ? faixa(turno.hora_entrada_sabado ?? turno.hora_entrada, turno.hora_saida_sabado ?? turno.hora_saida_seg_qui)
+    : '';
+  const intervalo = faixa(turno.hora_inicio_almoco, turno.hora_fim_almoco);
+  const intervaloSabado = faixa(turno.hora_inicio_almoco_sabado, turno.hora_fim_almoco_sabado);
+  const plantao = turno.tipo_escala === '12x36';
+  const linhas = [
+    normal && `${plantao ? 'Plantão' : 'Horário padrão'}: ${normal}`,
+    !plantao && sexta && sexta !== normal && `Sex.: ${sexta}`,
+    !plantao && sabado && `Sáb.: ${sabado}`,
+    !plantao && intervalo && `Intervalo: ${intervalo}`,
+    !plantao && intervaloSabado && `Intervalo no sáb.: ${intervaloSabado}`,
+  ].filter(Boolean);
+  return <p className="text-sm text-slate-700">
+    <strong>Escala {turno.tipo_escala === 'jovem_aprendiz' ? 'Jovem Aprendiz' : turno.tipo_escala}</strong>
+    {linhas.length > 0 && ` · ${linhas.join(' · ')}`}
+  </p>;
+}
+
 function SituacaoGestao({ pessoa, resumo = false }) {
   const itens = [
     ['Atestado vigente', pessoa.atestado, 'bg-sky-100 text-sky-900'],
@@ -50,6 +76,7 @@ export function ResultadoEquipe({ conferencia }) {
       <ul className="space-y-2">
         {conferencia.colaboradores.map(pessoa => <li key={pessoa.id} className="report-finding rounded-xl border border-slate-200 p-3 space-y-1">
           <p className="font-semibold">{pessoa.nome}{pessoa.funcao && ` · ${pessoa.funcao}`}</p>
+          <HorarioGestao turno={pessoa.turno} />
           <p className="text-sm font-semibold">{resultadosEquipe[pessoa.resultado]}</p>
           <SituacaoGestao pessoa={pessoa} />
           {requerConferencia(pessoa) && <p className="text-sm font-semibold text-amber-900">Conferir lotação com o supervisor</p>}
@@ -129,6 +156,7 @@ export default function ConferenciaEquipe({ unidade, conferencia, onConsultar, o
                 {Object.entries(resultadosEquipe).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
               </select>
             </label>
+            <HorarioGestao turno={pessoa.turno} />
             <SituacaoGestao pessoa={pessoa} resumo />
             {pessoa.resultado === 'nao_encontrado' && (
               <label className="grid gap-1 text-sm font-semibold">

@@ -20,6 +20,20 @@ type Funcionario = {
   funcoes: { nome: string } | null;
 };
 type Ocorrencia = { funcionario_id: string };
+type Turno = {
+  tipo_escala: string;
+  hora_entrada: string;
+  hora_saida_seg_qui: string;
+  hora_entrada_sex: string | null;
+  hora_saida_sex: string | null;
+  hora_entrada_sabado: string | null;
+  hora_saida_sabado: string | null;
+  hora_inicio_almoco: string | null;
+  hora_fim_almoco: string | null;
+  hora_inicio_almoco_sabado: string | null;
+  hora_fim_almoco_sabado: string | null;
+};
+type Horario = { funcionario_id: string; data_inicio: string; turnos_postos: Turno | null };
 
 async function consultar<T>(conexao: Conexao, tabela: string, filtros: Record<string, string>): Promise<T[]> {
   const url = new URL(`/rest/v1/${tabela}`, conexao.url);
@@ -52,11 +66,12 @@ async function ocorrenciasDoPosto(gestao: Conexao, funcionarios: Funcionario[], 
   const faltas = new Set<string>();
   const ferias = new Set<string>();
   const advertencias = new Set<string>();
+  const horarios = new Map<string, Horario>();
 
   for (let inicio = 0; inicio < funcionarios.length; inicio += 50) {
     const ids = funcionarios.slice(inicio, inicio + 50).map(f => f.id);
     const filtro = { select: 'funcionario_id', funcionario_id: `in.(${ids.join(',')})` };
-    const consultas = await Promise.all([
+    const [atestado, falta, feriasDoGrupo, advertencia, turnos] = await Promise.all([
       listar<Ocorrencia>(gestao, 'atestados', { ...filtro, data_inicio: `lte.${dia}`, data_fim: `gte.${dia}` }),
       listar<Ocorrencia>(gestao, 'faltas', {
         ...filtro, data_falta: `lte.${dia}`,
@@ -69,14 +84,29 @@ async function ocorrenciasDoPosto(gestao: Conexao, funcionarios: Funcionario[], 
         ...filtro, status: 'eq.entregue', data_aplicacao: `lte.${dia}`,
         or: '(grau.in.(verbal,escrita),and(grau.is.null,tipo.in.(verbal,escrita)))',
       }),
+      listar<Horario>(gestao, 'horarios_funcionarios', {
+        ...filtro,
+        select: 'funcionario_id,data_inicio,turnos_postos!turno_id(tipo_escala,hora_entrada,hora_saida_seg_qui,hora_entrada_sex,hora_saida_sex,hora_entrada_sabado,hora_saida_sabado,hora_inicio_almoco,hora_fim_almoco,hora_inicio_almoco_sabado,hora_fim_almoco_sabado)',
+        data_inicio: `lte.${dia}`,
+        or: `(data_fim.is.null,data_fim.gte.${dia})`,
+      }),
     ]);
-    [atestados, faltas, ferias, advertencias].forEach((destino, i) => {
-      consultas[i].forEach(linha => destino.add(linha.funcionario_id));
-    });
+    for (const [destino, linhas] of [
+      [atestados, atestado], [faltas, falta], [ferias, feriasDoGrupo], [advertencias, advertencia],
+    ] as const) {
+      linhas.forEach(linha => destino.add(linha.funcionario_id));
+    }
+    for (const horario of turnos) {
+      const anterior = horarios.get(horario.funcionario_id);
+      if (!anterior || horario.data_inicio > anterior.data_inicio) {
+        horarios.set(horario.funcionario_id, horario);
+      }
+    }
   }
 
   return funcionarios.map(({ id, nome, status, funcoes }) => ({
     id, nome, funcao: funcoes?.nome ?? '',
+    turno: horarios.get(id)?.turnos_postos ?? null,
     atestado: atestados.has(id) || (usarSituacaoDoCadastro && status === 'atestado'),
     falta: faltas.has(id) || (usarSituacaoDoCadastro && status === 'faltante'),
     ferias: ferias.has(id) || (usarSituacaoDoCadastro && status === 'ferias'),

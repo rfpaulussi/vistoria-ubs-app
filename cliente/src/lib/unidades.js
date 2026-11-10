@@ -9,13 +9,13 @@ const blocosAnteriores = [
   'SECRETARIA DA SAÚDE', 'PROMEG HIPERDIA',
   [], // PRÓ HIPER
   'ALMOXARIFADO SAÚDE', 'CIAS - PRO MULHER', 'UBS SANTO ÂNGELO', 'UBS VILA NOVA APARECIDA',
-  [], // CENTRO POP
+  'CENTRO POP',
   'UBS VILA DA PRATA', 'UBS VILA NATAL',
 ];
 
 export const ROTEIRO_UNIDADES = [
   ...blocosAnteriores.flat(),
-  'CAPS I', 'CENTRO MUNICIPAL DE SAÚDE MENTAL', 'UBS JARDIM MARICÁ',
+  'CAPS I', 'CENTRO MUNICIPAL DE SAÚDE MENTAL', 'UBS JARDIM MARICÁ', 'NUBEA',
 ];
 export const UNIDADES = [...ROTEIRO_UNIDADES].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
