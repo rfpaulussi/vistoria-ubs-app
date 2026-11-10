@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, Camera, Check, CircleAlert, ClipboardCheck, Clock3, History, Images, MapPin, Plus, RefreshCw, Search, Trash2, Users, X } from 'lucide-react';
 import { consultarEquipe } from '../lib/equipe';
+import CampoTextoPaco from '../components/CampoTextoPaco';
 import {
   UNIDADE_PACO, acessos, carregarFotosPaco, carregarRoteiroPaco, carregarVistoriasPaco,
   chaveFotoItem, frequencias, prepararFotoPaco, qualidades, salvarVistoriaPaco,
@@ -206,13 +207,16 @@ function EquipePaco({ pessoas, equipe, setEquipe, consultar, consulta }) {
   </>;
 }
 
-function Formulario({ roteiro, onSalvo }) {
+function Formulario({ roteiro, onSalvo, ativo }) {
   const [id, setId] = useState(() => crypto.randomUUID());
   const [grupo, setGrupo] = useState('');
   const [rotinaId, setRotinaId] = useState('');
   const [acesso, setAcesso] = useState('');
   const [frequencia, setFrequencia] = useState('');
   const [respostas, setRespostas] = useState({});
+  const [observacaoGeral, setObservacaoGeral] = useState('');
+  const [referenciaAcesso, setReferenciaAcesso] = useState('');
+  const [gravando, setGravando] = useState(false);
   const [fotos, setFotos] = useState({});
   const [equipe, setEquipe] = useState(equipeVazia);
   const [pessoas, setPessoas] = useState([]);
@@ -259,6 +263,8 @@ function Formulario({ roteiro, onSalvo }) {
     setAcesso('');
     setFrequencia('');
     setRespostas({});
+    setObservacaoGeral('');
+    setReferenciaAcesso('');
     setFotos({});
     setEquipe(equipeVazia);
     setErro('');
@@ -293,15 +299,14 @@ function Formulario({ roteiro, onSalvo }) {
 
   async function salvar(evento) {
     evento.preventDefault();
-    const formulario = evento.currentTarget;
-    const form = new FormData(formulario);
+    if (gravando) return;
     const dia = new Date(diaLocal(new Date()) + 'T12:00:00Z').getUTCDay();
     if (dia === 0 || dia === 6) {
       setErro('O roteiro do Paço se aplica de segunda a sexta.');
       return;
     }
-    const observacao = String(form.get('observacao') || '').trim();
-    const referencia = String(form.get('referencia') || '').trim();
+    const observacao = observacaoGeral.trim();
+    const referencia = autorizada ? referenciaAcesso.trim() : '';
     if (autorizada && !referencia) {
       setErro('Informe quem autorizou ou a referência do agendamento.');
       return;
@@ -339,7 +344,6 @@ function Formulario({ roteiro, onSalvo }) {
         ...(itens.length ? { itens } : {}),
         ...(presentes.length ? { presentes } : {}),
       }, bloqueada ? {} : fotos);
-      formulario.reset();
       trocarSetor('');
       setId(crypto.randomUUID());
       onSalvo();
@@ -381,15 +385,16 @@ function Formulario({ roteiro, onSalvo }) {
             setFrequencia('');
             setRespostas({});
             setFotos({});
+            setReferenciaAcesso('');
           }
         }} obrigatorio
           opcoes={modo === 'agendamento'
             ? { agendado: acessos.agendado, aguardando_agendamento: acessos.aguardando_agendamento }
             : { autorizado: acessos.autorizado, aguardando_autorizacao: acessos.aguardando_autorizacao }} />}
-        {autorizada && <label className="grid gap-1 text-sm font-semibold">
-          {modo === 'agendamento' ? 'Data ou referência do agendamento com a manutenção' : 'Quem autorizou o acesso'}
-          <input name="referencia" className="app-input" maxLength={200} required />
-        </label>}
+        {autorizada && <CampoTextoPaco
+          rotulo={modo === 'agendamento' ? 'Data ou referência do agendamento com a manutenção' : 'Quem autorizou o acesso'}
+          valor={referenciaAcesso} onChange={setReferenciaAcesso}
+          limite={200} linhaUnica obrigatorio ativo={ativo} onGravacao={setGravando} />}
         {podeAvaliar && <>
           <Avaliacao nome="frequencia" titulo="Frequência observada" valor={frequencia} onChange={setFrequencia}
             opcoes={{ conforme: 'Conforme o roteiro', fora_do_previsto: 'Fora do previsto', nao_verificada: 'Não verificada' }} />
@@ -398,11 +403,10 @@ function Formulario({ roteiro, onSalvo }) {
             <Avaliacao nome={'qualidade-' + idItem} titulo={pergunta} valor={respostas[idItem]?.resultado}
               onChange={resultado => atualizarResposta(idItem, { resultado })} opcoes={resultadosItens} />
             {respostas[idItem]?.resultado === 'precisa_corrigir' && <>
-              <label className="grid gap-1 text-sm font-semibold">O que precisa ser corrigido?
-                <textarea className="app-input" rows={2} maxLength={1000} required
-                  value={respostas[idItem]?.observacao ?? ''}
-                  onChange={evento => atualizarResposta(idItem, { observacao: evento.target.value })} />
-              </label>
+              <CampoTextoPaco rotulo="O que precisa ser corrigido?" limite={1000} obrigatorio
+                valor={respostas[idItem]?.observacao ?? ''}
+                onChange={observacao => atualizarResposta(idItem, { observacao })}
+                ativo={ativo} onGravacao={setGravando} />
               <div className="paco-duas-colunas">{tiposFoto.map(tipo => {
                 const chave = chaveFotoItem(idItem, tipo);
                 return <CartaoFoto key={tipo} tipo={tipo} foto={fotos[chave]} processando={processando === chave}
@@ -412,11 +416,10 @@ function Formulario({ roteiro, onSalvo }) {
             </>}
           </div>)}
         </>}
-        <label className="grid gap-1 text-sm font-semibold">Observações
-          <textarea className="app-input" name="observacao" maxLength={2000} rows={2}
-            placeholder={temDesvio ? 'Descreva o que estava fora do previsto.' : 'Acrescente um detalhe, se precisar.'}
-            required={podeAvaliar && temDesvio} />
-        </label>
+        <CampoTextoPaco rotulo="Observações" limite={2000}
+          valor={observacaoGeral} onChange={setObservacaoGeral}
+          placeholder={temDesvio ? 'Descreva o que estava fora do previsto.' : 'Acrescente um detalhe, se precisar.'}
+          obrigatorio={podeAvaliar && temDesvio} ativo={ativo} onGravacao={setGravando} />
         </Etapa>
         {podeAvaliar && <Etapa numero={4} titulo="Fotos gerais do setor" Icone={Camera}>
           <p className="paco-muted">Use estas fotos para registrar a visão geral do ambiente.</p>
@@ -429,7 +432,8 @@ function Formulario({ roteiro, onSalvo }) {
         <div className="paco-card paco-envio">
           {erro && <p role="alert" className="paco-erro"><CircleAlert size={17} aria-hidden="true" /> {erro}</p>}
           {podeAvaliar && <span className="paco-muted" aria-live="polite">{totalFotos} {totalFotos === 1 ? 'foto anexada' : 'fotos anexadas'}</span>}
-          <button type="submit" className="app-primary" disabled={(!acesso && modo !== 'livre') || salvando}>
+          {gravando && <p className="paco-muted">Encerre o ditado antes de registrar a vistoria.</p>}
+          <button type="submit" className="app-primary" disabled={(!acesso && modo !== 'livre') || salvando || gravando}>
             <Check size={17} aria-hidden="true" /> {salvando ? 'Salvando…' : 'Registrar vistoria'}
           </button>
         </div>
@@ -569,7 +573,7 @@ export default function PacoScreen({ perfil }) {
     </div>
     {aviso && <p role="status" className="paco-sucesso"><Check size={17} aria-hidden="true" /> {aviso}</p>}
     {campo && <div hidden={pagina !== 'nova'}>
-      {roteiro?.length > 0 ? <Formulario roteiro={roteiro} onSalvo={() => {
+      {roteiro?.length > 0 ? <Formulario roteiro={roteiro} ativo={pagina === 'nova'} onSalvo={() => {
         setAviso('Vistoria registrada.');
         setVersao(valor => valor + 1);
         mostrarPagina('historico');

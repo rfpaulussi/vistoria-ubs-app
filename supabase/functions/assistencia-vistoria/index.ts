@@ -33,7 +33,8 @@ Deno.serve(async (req: Request) => {
   if (!authorization?.match(/^Bearer \S+$/i)) return json({ codigo: 'SEM_ACESSO' }, 401);
 
   const url = Deno.env.get('SUPABASE_URL');
-  const anon = Deno.env.get('SUPABASE_ANON_KEY');
+  const chavesPublicas = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}') as Record<string, string>;
+  const anon = Deno.env.get('SUPABASE_ANON_KEY') || chavesPublicas.default;
   const chave = Deno.env.get('ANTHROPIC_API_KEY');
   if (!url || !anon || !chave) return json({ codigo: 'IA_INDISPONIVEL' }, 503);
 

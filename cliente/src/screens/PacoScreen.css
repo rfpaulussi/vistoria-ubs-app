@@ -235,6 +235,7 @@
   border-radius: .7rem;
   background: #f8fbfa;
 }
+.paco-ditado { display: grid; gap: .35rem; justify-items: start; }
 .paco-respostas[data-opcoes="4"] { grid-template-columns: repeat(2, minmax(0,1fr)); }
 .paco-painel { display: grid; gap: .75rem; }
 .paco-metricas { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .4rem; }
