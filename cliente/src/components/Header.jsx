@@ -6,6 +6,7 @@ const paginas = {
   historico: ['Histórico de vistorias', 'Consulte visitas, registros e evidências.', History],
   planejamento: ['Agenda', 'Acompanhe o roteiro de visitas.', CalendarDays],
   kpis: ['Indicadores', 'Acompanhe retornos e compare os resultados.', ChartNoAxesCombined],
+  paco: ['Paço Municipal de Mogi', 'Roteiro de limpeza e vistorias por setor.', ClipboardCheck],
 };
 
 export default function Header() {
@@ -26,7 +27,7 @@ export default function Header() {
       <header className="app-hero">
         <div className="app-hero-icon"><Icone size={22} aria-hidden="true" /></div>
         <div>
-          <p className="app-hero-kicker">Vistoria UBS</p>
+          <p className="app-hero-kicker">{screen === 'paco' ? 'Vistoria de limpeza' : 'Vistoria UBS'}</p>
           <h1>{titulo}</h1>
           <p>{subtitulo}</p>
         </div>
@@ -37,10 +38,10 @@ export default function Header() {
           </div>
         )}
       </header>
-      <div className="campaign-band">
+      {screen !== 'paco' && <div className="campaign-band">
         <HeartPulse size={17} aria-hidden="true" />
         <div><strong>{campanha.nome}</strong><span>{campanha.desc}</span></div>
-      </div>
+      </div>}
     </>
   );
 }

@@ -6,7 +6,8 @@ const headers = {
 };
 
 const urlVistoria = Deno.env.get('SUPABASE_URL');
-const chaveVistoria = Deno.env.get('SUPABASE_ANON_KEY');
+const chavesPublicas = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}') as Record<string, string>;
+const chaveVistoria = Deno.env.get('SUPABASE_ANON_KEY') || chavesPublicas.default;
 const urlGestao = Deno.env.get('DEMAX_SUPABASE_URL') ?? 'https://fwdhnipekbmeqozkpfyh.supabase.co';
 const chaveGestao = Deno.env.get('DEMAX_SUPABASE_KEY');
 const contrato = Deno.env.get('DEMAX_CONTRATO_ID') ?? 'c73a81ae-0104-4c05-b7d6-e6266f6be1b2';
@@ -46,7 +47,7 @@ async function listar<T>(gestao: Conexao, tabela: string, filtros: Record<string
   }
 }
 
-async function ocorrenciasDoPosto(gestao: Conexao, funcionarios: Funcionario[], dia: string) {
+async function ocorrenciasDoPosto(gestao: Conexao, funcionarios: Funcionario[], dia: string, usarSituacaoDoCadastro: boolean) {
   const atestados = new Set<string>();
   const faltas = new Set<string>();
   const ferias = new Set<string>();
@@ -76,9 +77,9 @@ async function ocorrenciasDoPosto(gestao: Conexao, funcionarios: Funcionario[], 
 
   return funcionarios.map(({ id, nome, status, funcoes }) => ({
     id, nome, funcao: funcoes?.nome ?? '',
-    atestado: atestados.has(id),
-    falta: faltas.has(id),
-    ferias: ferias.has(id),
+    atestado: atestados.has(id) || (usarSituacaoDoCadastro && status === 'atestado'),
+    falta: faltas.has(id) || (usarSituacaoDoCadastro && status === 'faltante'),
+    ferias: ferias.has(id) || (usarSituacaoDoCadastro && status === 'ferias'),
     advertencia: advertencias.has(id),
     afastado: status === 'afastado',
   })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -121,9 +122,16 @@ Deno.serve(async (req: Request) => {
       chave: chaveGestao,
       authorization: chaveGestao.startsWith('sb_secret_') ? undefined : `Bearer ${chaveGestao}`,
     };
+    const paco = unidade === 'Paço Municipal de Mogi';
+    const secretariasPorUnidade: Record<string, string> = {
+      'CENTRO POP': 'SEMAS',
+      NUBEA: 'SMAPA',
+    };
+    const secretaria = paco ? 'SMGCP' : (secretariasPorUnidade[unidade] ?? 'SMS');
     const postos = await consultar<{ id: string }>(gestao, 'postos', {
-      select: 'id', ativo: 'eq.true', secretaria: 'eq.SMS', contrato_id: `eq.${contrato}`, limit: '2',
-      ...(vinculo.posto_id ? { id: `eq.${vinculo.posto_id}` } : { nome: `eq.${unidade}` }),
+      select: 'id', ativo: 'eq.true', contrato_id: `eq.${contrato}`, limit: '2',
+      ...(paco && vinculo.posto_id ? {} : { secretaria: `eq.${secretaria}` }),
+      ...(vinculo.posto_id ? { id: `eq.${vinculo.posto_id}` } : { nome: paco ? 'eq.PAÇO MUNICIPAL' : `eq.${unidade}` }),
     });
     if (postos.length !== 1) return json({ codigo: 'POSTO_SEM_VINCULO' }, 409);
     const postoId = postos[0].id;
@@ -133,7 +141,7 @@ Deno.serve(async (req: Request) => {
       select: 'id,nome,status,funcoes!funcao_id(nome)',
       posto_id: `eq.${postoId}`, status: 'in.(ativo,ferias,atestado,afastado,faltante)',
     });
-    const colaboradores = await ocorrenciasDoPosto(gestao, funcionarios, dia);
+    const colaboradores = await ocorrenciasDoPosto(gestao, funcionarios, dia, paco);
     return json({ unidade, postoId, dataReferencia: dia, consultadaEm: agora.toISOString(), colaboradores });
   } catch (erro) {
     console.error(erro instanceof Error ? erro.message : 'Falha ao consultar a equipe');

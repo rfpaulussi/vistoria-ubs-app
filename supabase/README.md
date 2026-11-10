@@ -67,3 +67,16 @@ Aplique `20261109000500_ampliar_catalogo_treinamento.sql` para incluir mais sete
 Aplique `20261110000100_multiplos_treinamentos.sql` para finalizar uma vistoria com mais de um treinamento. Cada procedimento tem seu próprio roteiro e precisa de pelo menos uma assinatura. Os comprovantes de vistorias anteriores continuam disponíveis no Histórico.
 
 Aplique `20261110000200_catalogo_referencias_anvisa.sql` para liberar os quatro temas complementares e exibir links para as referências oficiais. O roteiro de contaminação biológica atende tanto à presença de matéria orgânica quanto a derramamentos identificados como biológicos. Derramamento químico exige o procedimento da unidade. As referências de resíduos orientam a consulta ao PGRSS do posto.
+
+## Piloto separado do Paço Municipal de Mogi
+
+1. Aplique a migração `20261110000400_piloto_paco.sql` em uma base de teste. Ela cadastra as 81 rotinas em `roteiro_paco` e cria tabelas e armazenamento privado separados do fluxo UBS.
+2. Convide as contas pelo Supabase Auth e provisione os perfis. Use `campo_paco` para a encarregada e `supervisor` para a supervisora. Insira os UUIDs dos perfis em `equipe_paco (encarregado_id, supervisor_id)`. O perfil `admin` pode abrir os dois módulos. As contas UBS continuam no papel `campo`.
+3. Atualize a função `equipe-posto` no ambiente de teste. Ela procura o posto ativo **PAÇO MUNICIPAL** da **SMGCP** no contrato Mogi. Se o nome ou secretaria divergirem no Gestão, configure o UUID oficial em `postos_demax.posto_id` para a unidade `Paço Municipal de Mogi`.
+4. Habilite `VITE_PILOTO_PACO=true` na prévia autenticada. Teste um registro com fotos antes e depois, uma sala sem autorização, um ventilador aguardando manutenção e uma cobertura consultada no Gestão. Use também uma segunda supervisora para verificar que ela não vê registros nem fotos da equipe alheia. Confira a navegação e o histórico com uma conta UBS.
+
+O roteiro vale de segunda a sexta. As frequências aparecem como referência para a vistoria por amostragem. O painel exclui itens sem avaliação dos denominadores de frequência e qualidade.
+
+Para registrar quem a encarregada encontrou no setor, aplique também `20261110000500_presenca_equipe_paco.sql`. A etapa **Equipe presente** consulta automaticamente a lotação do Paço na função `equipe-posto` e salva as pessoas marcadas na própria vistoria. Configure `DEMAX_SUPABASE_KEY` nos segredos da função no projeto de teste, seguindo a seção de conferência da equipe. A seleção de pessoas e o registro de cobertura são independentes.
+
+A migração `20261110000600_checklist_paco.sql` habilita as respostas e fotos por item. Aplique-a uma vez no Supabase do Paço antes de salvar vistorias com o checklist. Use `VITE_PILOTO_PACO=true` somente no deploy do Paço e aponte suas variáveis Supabase para a base do piloto.

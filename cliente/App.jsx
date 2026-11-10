@@ -9,6 +9,7 @@ import PlanejamentoScreen from './src/screens/PlanejamentoScreen';
 import KPIsScreen from './src/screens/KPIsScreen';
 import AcessoSupabase from './src/components/AcessoSupabase';
 import GestaoScreen from './src/screens/GestaoScreen';
+import PacoScreen from './src/screens/PacoScreen';
 
 function AppInner() {
   const { screen, perfil } = useApp();
@@ -20,7 +21,8 @@ function AppInner() {
   }, [screen]);
 
   return (
-    <div className="app-frame" style={{ '--campaign-color': campanha.cor }}>
+    <div className={screen === 'paco' ? 'app-frame paco-theme' : 'app-frame'}
+      style={{ '--campaign-color': screen === 'paco' ? '#176b63' : campanha.cor }}>
       <div className="app-shell">
       {showHeader && <Header />}
 
@@ -30,6 +32,7 @@ function AppInner() {
       {screen === 'planejamento' && <PlanejamentoScreen />}
       {screen === 'kpis'         && <KPIsScreen />}
       {screen === 'gestao' && perfil && <GestaoScreen administrador={perfil.papel === 'admin'} />}
+      {screen === 'paco' && <PacoScreen perfil={perfil} />}
 
       <BottomNav />
       </div>

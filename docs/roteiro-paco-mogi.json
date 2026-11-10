@@ -1,0 +1,1499 @@
+{
+  "unidade": "Paço Municipal de Mogi",
+  "origem": {
+    "arquivo": "ATUALIZADO 0710.xlsx",
+    "aba": "Cronograma Prefeitura "
+  },
+  "rotinas": [
+    {
+      "id": "paco-001",
+      "origem": "D5:H5",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "GABINETE / SALA DO VICE",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO/TAPETES/MOBÍLIA/ESPELHOS CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP.,TOMADAS,RODAPÉS/ TETO / PAREDES/ PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "sob_demanda"
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-002",
+      "origem": "D6:H6",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "BANHEIROS (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-003",
+      "origem": "D7:H7",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "SALAS DE REUNIÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO/TAPETES/MOBÍLIA/ESPELHOS CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP.,TOMADAS,RODAPÉS/ TETO / PAREDES/ PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "sob_demanda"
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-004",
+      "origem": "D8:H8",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "SALA DE VISITAÇÃO / SECRETARIAS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO/TAPETES/MOBÍLIA/ESPELHOS CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP.,TOMADAS,RODAPÉS/ TETO / PAREDES/ PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-005",
+      "origem": "D9:H9",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "SALA DE RECEPÇÃO / BANCADA DE ATEND.",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO/TAPETES/MOBÍLIA/ESPELHOS CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP.,TOMADAS,RODAPÉS/ TETO / PAREDES/ PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-006",
+      "origem": "D10:H10",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "COZINHA - GABINETE",
+      "atividades": "VARRER/ MOP ÁGUA / TETO / PAREDES /INTERRUP., TOMADAS E RODAPÉS/ CADEIRAS/ PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS / LIMPEZA DAS PORTAS E JANELAS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 180
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-007",
+      "origem": "D11:H11",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "CORREDOR / FILTRO DE ÁGUA",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DAS PORTAS E JANELAS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-008",
+      "origem": "D12:H12",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "sem_horario"
+      },
+      "revisao": {
+        "tipo": "sob_demanda",
+        "local_fechado": true
+      },
+      "acesso": "autorizacao"
+    },
+    {
+      "id": "paco-009",
+      "origem": "D13:H13",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado A",
+      "local": "VENTILADORES",
+      "atividades": "HIGIENIZAÇÃO COMPLETA / LAVAR A GRADE / ÁGUA + PEROXY / ENXAGUAR E SECAR.",
+      "primeira_tarefa": {
+        "tipo": "agendamento",
+        "requisito": "Agendar com a manutenção do prédio para desmontagem."
+      },
+      "revisao": {
+        "tipo": "verificacao_gestor"
+      },
+      "acesso": "agendamento"
+    },
+    {
+      "id": "paco-010",
+      "origem": "D15:H15",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "BANHEIROS (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-011",
+      "origem": "D16:H16",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "CORREDOR / BANCADAS DE ATENDIMENTO",
+      "atividades": "VARRER/ MOPEAR - ÁGUA OU A SECO / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DE PORTAS, MAÇANETA.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 30
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-012",
+      "origem": "D17:H17",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "ÁREA DE CONVIVÊNCIA (COPA)",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DA PIA/ DE PORTAS, MAÇANETA/ JANELAS E PARA-PEITOS/ PAREDES E ARMÁRIOS",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "tarefas_adicionais": [
+        {
+          "atividade": "Limpeza da geladeira",
+          "dia_da_semana": "sexta-feira",
+          "horario": "14:00"
+        }
+      ],
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-013",
+      "origem": "D18:H18",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "SALA DE REUNIÃO (DESATIVADA)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "local_fechado"
+      },
+      "revisao": {
+        "tipo": "sob_demanda"
+      },
+      "acesso": "autorizacao"
+    },
+    {
+      "id": "paco-014",
+      "origem": "D19:H19",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "COMUNICAÇÃO | GOVERNO | PLANEJ. E GESTÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-015",
+      "origem": "D20:H20",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "PROCURADORIA GERAL | DESENVOLVIMENTO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-016",
+      "origem": "D21:H21",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "TRANSPARÊNCIA | ASSUNTOS JURÍDICOS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-017",
+      "origem": "D22:H22",
+      "pavimento_ou_area": "3º andar",
+      "grupo": "Lado B",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "14:00",
+          "16:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-018",
+      "origem": "D27:H27",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-019",
+      "origem": "D28:H28",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "ATENDIMENTO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-020",
+      "origem": "D29:H29",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "TECNOLOGIA DA INFORMAÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:30",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-021",
+      "origem": "D30:H30",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "MOBILIDADE URBANA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-022",
+      "origem": "D31:H31",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "IPTU / ITBI - RENDAS IMOBILIÁRIAS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-023",
+      "origem": "D32:H32",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "ÁREA DE CONVIVÊNCIA",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DA PIA/ DE PORTAS, MAÇANETA/JANELAS E PARA-PEITOS/ PAREDES E ARMÁRIOS",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "tarefas_adicionais": [
+        {
+          "atividade": "Limpeza da geladeira",
+          "dia_da_semana": "sexta-feira",
+          "horario": "14:00"
+        }
+      ],
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-024",
+      "origem": "D33:H33",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "HABITAÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-025",
+      "origem": "D34:H34",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "CORREDOR / BANCADAS DE ATEND.",
+      "atividades": "VARRER/ MOPEAR - ÁGUA OU A SECO / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DE PORTAS, MAÇANETA.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 30
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-026",
+      "origem": "D35:H35",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "MANUTENÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "local_fechado"
+      },
+      "revisao": {
+        "tipo": "sob_demanda"
+      },
+      "acesso": "autorizacao"
+    },
+    {
+      "id": "paco-027",
+      "origem": "D36:H36",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado A",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "13:00",
+          "16:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-028",
+      "origem": "D38:H38",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-029",
+      "origem": "D39:H39",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "CONTROLE INTERNO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-030",
+      "origem": "D40:H40",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "SINDICÂNCIA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:30",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-031",
+      "origem": "D41:H41",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "IPREM (PROVA DE VIDA)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-032",
+      "origem": "D42:H42",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "URBANISMO / SECRETARIA DE URBANISMO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-033",
+      "origem": "D43:H43",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "ÁREA DE CONVIVÊNCIA (COPA) / CORREDOR",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DA PIA/ DE PORTAS, MAÇANETA/ JANELAS E PARA-PEITOS/ PAREDES E ARMÁRIOS",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "tarefas_adicionais": [
+        {
+          "atividade": "Limpeza da geladeira",
+          "dia_da_semana": "sexta-feira",
+          "horario": "14:00"
+        }
+      ],
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-034",
+      "origem": "D44:H44",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "14:00",
+          "17:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-035",
+      "origem": "D45:H45",
+      "pavimento_ou_area": "2º andar",
+      "grupo": "Lado B",
+      "local": "VENTILADORES",
+      "atividades": "HIGIENIZAÇÃO COMPLETA / LAVAR A GRADE / ÁGUA + PEROXY / ENXAGUAR E SECAR.",
+      "primeira_tarefa": {
+        "tipo": "agendamento",
+        "requisito": "Agendar com a manutenção do prédio para desmontagem."
+      },
+      "revisao": {
+        "tipo": "verificacao_gestor"
+      },
+      "acesso": "agendamento"
+    },
+    {
+      "id": "paco-036",
+      "origem": "D50:H50",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-037",
+      "origem": "D51:H51",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "AMAMENTAÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "local_fechado"
+      },
+      "revisao": {
+        "tipo": "sob_demanda"
+      },
+      "acesso": "autorizacao"
+    },
+    {
+      "id": "paco-038",
+      "origem": "D52:H52",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "SECRETARIA DA GESTÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-039",
+      "origem": "D53:H53",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "RECURSOS HUMANOS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:30",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-040",
+      "origem": "D54:H54",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "FUNDO SOCIAL / CIDADANIA INCLUSÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-041",
+      "origem": "D55:H55",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "SEGURANÇA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-042",
+      "origem": "D56:H56",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "IPTU / ITBI - RENDAS IMOBILIÁRIAS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-043",
+      "origem": "D57:H57",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "BANCADA DE ATENDIMENTO",
+      "atividades": "LIMPEZA DA SUPERFÍCIE - ÁLCOOL",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 30
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-044",
+      "origem": "D58:H58",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "SALA DE LICITAÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-045",
+      "origem": "D59:H59",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "ÁREA DE CONVIVÊNCIA (A / B)",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS/ LIMPEZA DA PIA/ DE PORTAS, MAÇANETA/ JANELAS E PARA-PEITOS/ PAREDES E ARMÁRIOS",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "tarefas_adicionais": [
+        {
+          "atividade": "Limpeza da geladeira",
+          "dia_da_semana": "sexta-feira",
+          "horario": "14:00"
+        }
+      ],
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-046",
+      "origem": "D60:H60",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado A",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "11:00",
+        "fim": "11:30"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "13:00",
+          "16:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-047",
+      "origem": "D62:H62",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-048",
+      "origem": "D63:H63",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "SETOR DE SUBVENÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-049",
+      "origem": "D64:H64",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "GABINETE DE FINANÇAS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-050",
+      "origem": "D65:H65",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "DÍVIDA ATIVA (IPTU)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-051",
+      "origem": "D66:H66",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "DESPESA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-052",
+      "origem": "D67:H67",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "COORDENADORIA DE PROJETO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-053",
+      "origem": "D68:H68",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "TECNOLOGIA DA INFORMAÇÃO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-054",
+      "origem": "D69:H69",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "BANCADA DE ATENDIMENTO",
+      "atividades": "LIMPEZA DA SUPERFÍCIE - ÁLCOOL",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "11:00",
+        "fim": "11:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 30
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-055",
+      "origem": "D70:H70",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "ISS / ICMS / FINANÇAS",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "11:30",
+        "fim": "12:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-056",
+      "origem": "D71:H71",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "TELEFONIA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "12:00",
+        "fim": "12:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-057",
+      "origem": "D72:H72",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "12:30",
+        "fim": "13:00"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "14:00",
+          "16:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-058",
+      "origem": "D73:H73",
+      "pavimento_ou_area": "1º andar",
+      "grupo": "Lado B",
+      "local": "VENTILADORES",
+      "atividades": "HIGIENIZAÇÃO COMPLETA / LAVAR A GRADE / ÁGUA + PEROXY / ENXAGUAR E SECAR.",
+      "primeira_tarefa": {
+        "tipo": "agendamento",
+        "requisito": "Agendar com a manutenção do prédio para desmontagem."
+      },
+      "revisao": {
+        "tipo": "verificacao_gestor"
+      },
+      "acesso": "agendamento"
+    },
+    {
+      "id": "paco-059",
+      "origem": "D78:H78",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-060",
+      "origem": "D79:H79",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "SECRETARIA DA MULHER",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:40"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-061",
+      "origem": "D80:H80",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "AUDITÓRIO - ( SALA DE REUNIÃO)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /CADEIRAS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:40",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-062",
+      "origem": "D81:H81",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "OUVIDORIA",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-063",
+      "origem": "D82:H82",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "SALA DE VISITAÇÃO (QUADROS)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /CADEIRAS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-064",
+      "origem": "D83:H83",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "SALA DEMAX / DML",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-065",
+      "origem": "D84:H84",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "GUARITA - GCM (F. INDICADO)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 120
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-066",
+      "origem": "D85:H85",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado A",
+      "local": "ELEVADORES - (F. INDICADO)",
+      "atividades": "VARRER/ MOP ÁGUA / PANO / LIMPEZA DO ESPELHO + ÁLCOOL/ TRILHOS E BOTÕES/ BRILHO INOX E DESINFETANTE / MÁRMORES NO HALL.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-067",
+      "origem": "D87:H87",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "BANHEIROS - (FEM / MASC / DEF.)",
+      "atividades": "LAVAR AZULEJOS/ LIMPEZA E DESINF. DE VASOS SANIT. E ASSENTOS, PIAS E BANCADAS/ PORTAS, MAÇANETAS E DIVISÓRIAS/ RALOS/ ESPELHOS/ REPOSIÇÃO DE PAPEL HIG., TOLAHA E SABONETES.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "06:00",
+        "fim": "07:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 20
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-068",
+      "origem": "D88:H88",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "PAC",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-069",
+      "origem": "D89:H89",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "PROCON",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:30",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-070",
+      "origem": "D90:H90",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "SALA DA GUARDA - VESTIÁRIO",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "08:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-071",
+      "origem": "D91:H91",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "SEMAE",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:30",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-072",
+      "origem": "D92:H92",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "SALA DE REUNIÃO (PAC)",
+      "atividades": "VARRER /ASPIRAR /PASSAR PANO /TAPETES/MOBÍLIA/ESPELHOS / CADEIRAS, POLTRONAS, SOFÁS/PORTAS E JANELAS, DIVISÓRIAS/ INTERRUP., TOMADAS,RODAPÉS/ TETO / PAREDES - PARA-PEITOS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "09:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-073",
+      "origem": "D93:H93",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "ÁREA DE CONVIVÊNCIA",
+      "atividades": "VARRER/ MOP ÁGUA / PANO + ÁLCOOL NAS MESAS E DIVISÓRIAS E PORTAS",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:30",
+        "fim": "10:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 30
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-074",
+      "origem": "D94:H94",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "CORREDOR DE ACESSO (RESTAURANTE)",
+      "atividades": "VARRER/ MOPEAR - ÁGUA/ PANO/ PAREDES E RODAPÉS/ DIVISÓRIAS/ LIMPEZA DE PORTAS E MAÇANETA.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:00",
+        "fim": "10:30"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-075",
+      "origem": "D95:H95",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "DML / VESTIÁRIO",
+      "atividades": "LIMPEZA DO TETO - TEIAS/ PAREDES / PORTA / MAÇANETA/ ARMÁRIOS/ LIMPEZA DO TANQUE/ VARRER/ PASSAR PANO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "10:30",
+        "fim": "11:00"
+      },
+      "revisao": {
+        "tipo": "horarios_fixos",
+        "horarios": [
+          "13:00",
+          "15:00"
+        ]
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-076",
+      "origem": "D96:H96",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Lado B",
+      "local": "VENTILADORES",
+      "atividades": "HIGIENIZAÇÃO COMPLETA / LAVAR A GRADE / ÁGUA + PEROXY / ENXAGUAR E SECAR.",
+      "primeira_tarefa": {
+        "tipo": "agendamento",
+        "requisito": "Agendar com a manutenção do prédio para desmontagem."
+      },
+      "revisao": {
+        "tipo": "verificacao_gestor"
+      },
+      "acesso": "agendamento"
+    },
+    {
+      "id": "paco-077",
+      "origem": "D98:H98",
+      "pavimento_ou_area": "Áreas externas",
+      "grupo": "Limpeza externa e vidros baixos",
+      "local": "FACHADA LATERAL E GARAGEM COMPLETA",
+      "atividades": "VARRER / REC. LIXO / VIDROS/ LAVAR PORTÃO/ MOBÍLIAS E ESTOFADOS/ TEIAS/ PAREDES/ RODAPÉS/ ELEVADOR/ TRILHOS/ PARA-PEITO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "07:20"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-078",
+      "origem": "D99:H99",
+      "pavimento_ou_area": "Áreas externas",
+      "grupo": "Limpeza externa e vidros baixos",
+      "local": "FACHADA FRENTE / ESCADARIA",
+      "atividades": "VARRER / RECOLHER O LIXO .",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:20",
+        "fim": "08:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-079",
+      "origem": "D100:H100",
+      "pavimento_ou_area": "Áreas externas",
+      "grupo": "Limpeza externa e vidros baixos",
+      "local": "DESCANSO - RESTAURANTE",
+      "atividades": "VARRER /RASTELAR E RECOLHER O LIXO / LIMPEZA DAS JANELAS ESTERNAS / PAREDES E PARA-PEITO/ VISOTIRA GERAL DE TEIAS.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "08:00",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-080",
+      "origem": "D102:H102",
+      "pavimento_ou_area": "Térreo",
+      "grupo": "Vidros internos e externos",
+      "local": "FACHADAS FRENTE TÉRREO",
+      "atividades": "LIMPEZA GERAL DE VIDROS/ VARRIÇÃO/ VISTORIA GERAL DE TEIAS, TRILHOS, ACÚMULO DE POREIRA.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "07:00",
+        "fim": "09:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    },
+    {
+      "id": "paco-081",
+      "origem": "D103:H103",
+      "pavimento_ou_area": "Andares",
+      "grupo": "Vidros internos e externos",
+      "local": "VIDROS INTERNOS - ANDARES",
+      "atividades": "LIMPEZA GERAL DE VIDROS/ VISTORIA GERAL DE TEIAS, TRILHOS, ACÚMULO DE POREIRA, ASPIRAR VÃO DO PARA-PEITO.",
+      "primeira_tarefa": {
+        "tipo": "janela",
+        "inicio": "09:00",
+        "fim": "12:00"
+      },
+      "revisao": {
+        "tipo": "intervalo",
+        "minutos": 60
+      },
+      "acesso": "livre"
+    }
+  ],
+  "dias_da_semana": [
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira"
+  ]
+}

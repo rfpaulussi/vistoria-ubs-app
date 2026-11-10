@@ -81,7 +81,10 @@ export function AppProvider({ children, perfil }) {
   const storageKey = perfil ? `${STORAGE_KEY}:${perfil.id}` : STORAGE_KEY;
   const novaMeta = () => ({ ...makeInitialMeta(), encarregada: perfil?.nome ?? '' });
   const novoId = () => perfil ? crypto.randomUUID() : null;
-  const [screen, setScreen] = useState(perfil?.papel === 'admin' ? 'gestao' : 'vistoria');
+  const [screen, setScreen] = useState(() => {
+    if (perfil?.papel === 'admin') return perfil.paco ? 'paco' : 'gestao';
+    return ['supervisor', 'campo_paco'].includes(perfil?.papel) ? 'paco' : 'vistoria';
+  });
   const [vistoriaId, setVistoriaId] = useState(() => loadSaved(storageKey, 'vistoriaId', novoId));
   const [conferencia, setConferencia] = useState(() => loadSaved(storageKey, 'conferencia', () => null));
   const [treinamentos, setTreinamentos] = useState([]);

@@ -9,6 +9,9 @@ export async function consultarEquipe(unidade) {
     if (detalhe?.codigo === 'POSTO_SEM_VINCULO') {
       throw new Error('Não foi possível identificar um único posto correspondente no Gestão. Peça à administração para conferir o vínculo.');
     }
+    if (error.context?.status === 404 || error.context?.status === 503) {
+      throw new Error('A integração com o Gestão Demax ainda precisa ser ativada neste ambiente.');
+    }
     throw new Error('Não foi possível consultar a equipe no Gestão. Tente novamente.');
   }
   if (data?.unidade !== unidade || !data.postoId || !Array.isArray(data.colaboradores)) {
