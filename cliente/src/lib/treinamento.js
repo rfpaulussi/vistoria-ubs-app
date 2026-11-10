@@ -10,16 +10,16 @@ const procedimentosPorItem = new Map([
 const temasPorItem = new Map([
   ['ambienteGeral', ['paredes-tetos-1', 'pisos-salas-1', 'pisos-circulacao-1']],
   ['cronogramaLimpeza', ['limpeza-concorrente-1', 'limpeza-terminal-1']],
-  ['sujeiraDerramamento', ['contaminacao-biologica-1']],
-  ['usoEpi', []],
-  ['lixeirasTampadas', ['lixeira-infectante-1']],
-  ['areaResiduos', []],
-  ['equipamentosMateriais', []],
-  ['produtosIdentificados', []],
-  ['limpezaVentiladores', []],
-  ['papeleiras', []],
-  ['saboneteiras', []],
-  ['vidrosBaixaAltura', []],
+  ['sujeiraDerramamento', ['contaminacao-biologica-1', 'derramamento-quimico-comunicacao-1']],
+  ['usoEpi', ['epi-limpeza-1']],
+  ['lixeirasTampadas', ['higienizacao-lixeiras-1', 'lixeira-infectante-1']],
+  ['areaResiduos', ['abrigo-residuos-organizacao-1']],
+  ['equipamentosMateriais', ['higienizacao-materiais-limpeza-1']],
+  ['produtosIdentificados', ['rotulagem-produtos-quimicos-1']],
+  ['limpezaVentiladores', ['limpeza-ventiladores-1']],
+  ['papeleiras', ['higienizacao-papeleiras-1']],
+  ['saboneteiras', ['higienizacao-saboneteiras-1']],
+  ['vidrosBaixaAltura', ['limpeza-vidros-acessiveis-1']],
 ]);
 
 export function sugerirTreinamentos(perguntas, respostas, catalogo) {
