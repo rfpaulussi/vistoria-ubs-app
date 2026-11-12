@@ -19,7 +19,7 @@ export default function Header() {
     : screen === 'gestao'
       ? perfil?.papel === 'admin'
         ? ['Painel de gestão', 'Acompanhe o que precisa de ação.', ListChecks]
-        : ['Meus retornos', 'Consulte prazos e orientações para as suas visitas.', ListChecks]
+        : ['Meus retornos', 'Encaminhe apontamentos e valide as respostas das suas vistorias.', ListChecks]
       : paginas[screen];
 
   return (

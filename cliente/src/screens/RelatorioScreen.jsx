@@ -50,7 +50,7 @@ async function carregarRelatorio(visita, lista, recente) {
 }
 
 export default function RelatorioScreen({ arquivada, historico, onVoltar }) {
-  const { meta, respostas, PERGUNTAS, resetVistoria, perfil, conferencia, treinamentos, vistoriaId } = useApp();
+  const { meta, respostas, PERGUNTAS, resetVistoria, perfil, conferencia, treinamentos, vistoriaId, abrirRetornos } = useApp();
   const [visita] = useState(() => arquivada ?? ({
     id: perfil ? vistoriaId : null,
     ubs: meta.ubs,
@@ -136,6 +136,13 @@ export default function RelatorioScreen({ arquivada, historico, onVoltar }) {
         treinamento={recente ? treinamentos : dados?.treinamento}
         anteriores={dados?.anteriores ?? []} itensAnteriores={dados?.itensAnteriores ?? []}
         indisponiveis={dados?.indisponiveis} />}
+      {visita.id && itens.some(item => item.acao && item.acao.situacao !== 'resolvido') && (
+        <div className="mt-3 print:hidden">
+          <button type="button" className="app-primary" onClick={() => abrirRetornos(visita.id)}>
+            Acompanhar e encaminhar apontamentos
+          </button>
+        </div>
+      )}
       <div className="report-actions print:hidden">
         <button type="button" onClick={imprimir} disabled={!dados || imprimindo} className="app-primary flex-1">
           <Printer size={17} aria-hidden="true" /> {imprimindo ? 'Preparando…' : 'PDF'}

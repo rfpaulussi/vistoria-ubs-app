@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Copy, Link2, MessageSquare } from 'lucide-react';
 import ResumoRetornoSupervisao from './ResumoRetornoSupervisao';
-import { dataHoraBr, operacaoSupervisao, statusRetorno, urlRetorno } from '../lib/retornoSupervisao';
+import { dataBr, dataHoraBr, hoje, operacaoSupervisao, somarDias, statusRetorno, urlRetorno } from '../lib/retornoSupervisao';
 
 export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar }) {
   const [ocupado, setOcupado] = useState(false);
   const [gerado, setGerado] = useState(null);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
+  const [prazoDigitado, setPrazoDigitado] = useState(null);
+  const prazo = prazoDigitado ?? link?.prazo_resposta ?? somarDias(hoje(), 3);
   const url = link?.ativo && link.id === gerado?.id ? gerado?.url : null;
 
   async function executar(operacao) {
@@ -25,14 +27,27 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
 
   function emitir(evento) {
     evento.preventDefault();
-    const supervisor = new FormData(evento.currentTarget).get('supervisor');
+    const form = new FormData(evento.currentTarget);
+    const supervisor = form.get('supervisor');
     executar(async () => {
       const novo = await operacaoSupervisao('emitir_link_supervisao', {
-        p_vistoria_id: vistoriaId, p_supervisor: supervisor, p_link_anterior: link?.id ?? null,
+        p_vistoria_id: vistoriaId, p_supervisor: supervisor, p_link_anterior: link?.id ?? null, p_prazo_resposta: prazo,
       });
       setGerado({ id: novo.id, url: urlRetorno(novo.token) });
-      onAtualizar({ id: novo.id, supervisor: novo.supervisor, expira_em: novo.expira_em, ativo: true });
+      onAtualizar({ id: novo.id, supervisor: novo.supervisor, expira_em: novo.expira_em, prazo_resposta: novo.prazo_resposta, ativo: true });
+      setPrazoDigitado(null);
       setMensagem('Link emitido. Copie ou compartilhe com o supervisor.');
+    });
+  }
+
+  function salvarPrazo() {
+    executar(async () => {
+      const salvo = await operacaoSupervisao('alterar_prazo_supervisao', {
+        p_vistoria_id: vistoriaId, p_link_id: link.id, p_prazo_resposta: prazo,
+      });
+      onAtualizar({ ...link, prazo_resposta: salvo });
+      setPrazoDigitado(null);
+      setMensagem('Prazo atualizado no link já compartilhado.');
     });
   }
 
@@ -54,13 +69,14 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
     }
   }
 
-  const texto = url && `Olá, ${link.supervisor}. Registre o retorno de cada apontamento da vistoria de ${unidade} por este link ${url}`;
+  const texto = url && `Olá, ${link.supervisor}. Registre o retorno de cada apontamento da vistoria de ${unidade} até ${dataBr(link.prazo_resposta)}. Acesse ${url}`;
 
   return (
     <section className="field-card space-y-3">
       <h4 className="flex items-center gap-2 font-bold"><Link2 size={17} aria-hidden="true" /> Link do supervisor</h4>
       {link?.ativo && <p className="text-sm">
-        Link ativo para <strong>{link.supervisor}</strong> até {dataHoraBr(link.expira_em)}.
+        Link de <strong>{link.supervisor}</strong> válido até {dataHoraBr(link.expira_em)}.
+        {link.prazo_resposta && <> Prazo para responder até <strong>{dataBr(link.prazo_resposta)}</strong>.</>}
       </p>}
       {abertos > 0 && <form onSubmit={emitir}>
         <fieldset disabled={ocupado} className="flex min-w-0 flex-wrap items-end gap-2">
@@ -68,6 +84,12 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
             <input key={link?.id} name="supervisor" className="app-input" required maxLength={120}
               defaultValue={link?.supervisor ?? ''} />
           </label>
+          <label className="grid gap-1 text-sm font-semibold">Prazo para responder
+            <input name="prazo" type="date" className="app-input" min={hoje()} value={prazo}
+              onChange={evento => setPrazoDigitado(evento.target.value)} required />
+          </label>
+          {link?.ativo && <button type="button" className="app-secondary" onClick={salvarPrazo}
+            disabled={!prazo || prazo < hoje() || prazo === link.prazo_resposta}>Salvar prazo no mesmo link</button>}
           <button className="app-primary" type="submit">
             {ocupado ? 'Aguarde…' : link?.ativo ? 'Substituir link' : 'Gerar link'}
           </button>
@@ -102,11 +124,11 @@ export function RevisaoSupervisao({ respostas, situacao, onRevisar }) {
   const [devolver, setDevolver] = useState(false);
   const [atual, ...anteriores] = respostas;
 
-  async function revisar(decisao, nota) {
+  async function revisar(decisao, nota, prazo = null) {
     setOcupado(true);
     setErro('');
     try {
-      await onRevisar(atual.id, decisao, nota);
+      await onRevisar(atual.id, decisao, nota, prazo);
       setDevolver(false);
     } catch (falha) {
       setErro(falha.message);
@@ -128,11 +150,15 @@ export function RevisaoSupervisao({ respostas, situacao, onRevisar }) {
         devolver ? (
           <form onSubmit={evento => {
             evento.preventDefault();
-            revisar('devolvido', new FormData(evento.currentTarget).get('nota'));
+            const form = new FormData(evento.currentTarget);
+            revisar('devolvido', form.get('nota'), form.get('prazo'));
           }}>
             <fieldset className="grid min-w-0 gap-2" disabled={ocupado}>
               <label className="grid gap-1 text-sm font-semibold">O que o supervisor precisa complementar
                 <textarea className="app-input" name="nota" rows={3} required maxLength={1000} />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold sm:max-w-xs">Prazo para enviar o complemento
+                <input type="date" name="prazo" className="app-input" min={hoje()} defaultValue={somarDias(hoje(), 3)} required />
               </label>
               <div className="flex flex-wrap gap-2">
                 <button className="app-primary" type="submit">{ocupado ? 'Salvando…' : 'Solicitar complemento'}</button>
@@ -176,14 +202,14 @@ export function useRetornosSupervisao(vistoriaId, carregar, versaoLista) {
     return () => { ativo = false; };
   }, [vistoriaId, carregar, versao, versaoLista]);
 
-  async function revisar(id, decisao, nota) {
+  async function revisar(id, decisao, nota, prazo) {
     const situacao = await operacaoSupervisao('revisar_retorno_supervisao', {
-      p_resposta_id: id, p_decisao: decisao, p_nota: nota,
+      p_resposta_id: id, p_decisao: decisao, p_nota: nota, p_prazo_complemento: prazo,
     });
     // Remove as ações da revisão imediatamente enquanto o servidor recarrega o registro.
     setDados(atual => ({
       ...atual,
-      respostas: atual.respostas.map(resposta => resposta.id === id ? { ...resposta, decisao } : resposta),
+      respostas: atual.respostas.map(resposta => resposta.id === id ? { ...resposta, decisao, nota_revisao: nota, prazo_complemento: prazo } : resposta),
     }));
     setVersao(v => v + 1);
     return situacao;

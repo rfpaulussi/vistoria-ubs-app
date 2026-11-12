@@ -25,6 +25,7 @@ export default function ResumoRetornoSupervisao({ resposta, interno }) {
       {resposta.revisada_em && <div className="border-t pt-2">
         <p className="font-semibold">{resposta.decisao === 'devolvido' ? 'Complemento solicitado' : 'Retorno aceito'}
           {' · '}{dataHoraBr(resposta.revisada_em)}{interno && resposta.revisor && ` · ${resposta.revisor}`}</p>
+        {resposta.prazo_complemento && <p>Prazo para complementar · {dataBr(resposta.prazo_complemento)}</p>}
         {resposta.nota_revisao && <p className="whitespace-pre-wrap">{resposta.nota_revisao}</p>}
       </div>}
     </div>

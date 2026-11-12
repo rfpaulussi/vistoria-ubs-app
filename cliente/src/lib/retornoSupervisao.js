@@ -8,6 +8,18 @@ export const situacoesRetorno = {
 
 export const dataBr = data => data?.split('-').reverse().join('/') || 'Sem prazo';
 export const hoje = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+export function somarDias(data, dias) {
+  const dia = new Date(data + 'T00:00:00Z');
+  dia.setUTCDate(dia.getUTCDate() + dias);
+  return dia.toISOString().slice(0, 10);
+}
+
+export function prazoDeResposta(situacao, resposta, prazoLink) {
+  if (situacao === 'resolvido') return null;
+  if (!resposta) return prazoLink;
+  return resposta.decisao === 'devolvido' ? resposta.prazo_complemento ?? prazoLink : null;
+}
+
 export const dataHoraBr = data => new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short',
 }).format(new Date(data));

@@ -85,6 +85,11 @@ export function AppProvider({ children, perfil }) {
     if (perfil?.papel === 'admin') return perfil.paco ? 'paco' : 'gestao';
     return ['supervisor', 'campo_paco'].includes(perfil?.papel) ? 'paco' : 'vistoria';
   });
+  const [vistoriaRetorno, setVistoriaRetorno] = useState(null);
+  function abrirRetornos(id) {
+    setVistoriaRetorno(id);
+    setScreen('gestao');
+  }
   const [vistoriaId, setVistoriaId] = useState(() => loadSaved(storageKey, 'vistoriaId', novoId));
   const [conferencia, setConferencia] = useState(() => loadSaved(storageKey, 'conferencia', () => null));
   const [treinamentos, setTreinamentos] = useState([]);
@@ -146,7 +151,7 @@ export function AppProvider({ children, perfil }) {
 
   return (
     <AppContext.Provider value={{
-      screen, setScreen,
+      screen, setScreen, vistoriaRetorno, abrirRetornos,
       perfil, vistoriaId,
       meta, updateMeta,
       conferencia, setConferencia,

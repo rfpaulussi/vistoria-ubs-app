@@ -13,7 +13,7 @@ import PacoScreen from './src/screens/PacoScreen';
 import RetornoSupervisaoScreen from './src/screens/RetornoSupervisaoScreen';
 
 function AppInner() {
-  const { screen, perfil } = useApp();
+  const { screen, perfil, vistoriaRetorno } = useApp();
   const showHeader = screen !== 'relatorio';
   const campanha = campanhaAtual();
 
@@ -32,7 +32,7 @@ function AppInner() {
       {screen === 'historico'    && <HistoricoScreen />}
       {screen === 'planejamento' && <PlanejamentoScreen />}
       {screen === 'kpis'         && <KPIsScreen />}
-      {screen === 'gestao' && perfil && <GestaoScreen administrador={perfil.papel === 'admin'} />}
+      {screen === 'gestao' && perfil && <GestaoScreen administrador={perfil.papel === 'admin'} vistoriaSelecionada={vistoriaRetorno} />}
       {screen === 'paco' && <PacoScreen perfil={perfil} />}
 
       <BottomNav />

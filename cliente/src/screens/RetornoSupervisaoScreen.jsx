@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ClipboardCheck } from 'lucide-react';
 import ResumoRetornoSupervisao from '../components/ResumoRetornoSupervisao';
-import { dataBr, dataHoraBr, hoje, operacaoSupervisao, situacoesRetorno, statusRetorno } from '../lib/retornoSupervisao';
+import { dataBr, dataHoraBr, hoje, operacaoSupervisao, prazoDeResposta, situacoesRetorno, statusRetorno } from '../lib/retornoSupervisao';
 import { normalizarUnidade } from '../lib/unidades';
 
 const instrucoes = {
@@ -80,10 +80,12 @@ function FormularioRetorno({ item, nome, onEnviar }) {
   );
 }
 
-function ItemRetorno({ item, nome, expandido, onEnviar }) {
+function ItemRetorno({ item, nome, expandido, prazoLink, onEnviar }) {
   const [mostrar, setMostrar] = useState(expandido);
   const [atualizar, setAtualizar] = useState(false);
   const { resposta } = item;
+  const prazoResposta = prazoDeResposta(item.situacao, resposta, prazoLink);
+  const atrasada = prazoResposta && prazoResposta < hoje();
   const aberto = item.situacao !== 'resolvido';
   const podeAtualizar = aberto && resposta?.decisao === 'aceito';
   const formulario = aberto && (!resposta || resposta.decisao === 'devolvido' || podeAtualizar && atualizar);
@@ -93,14 +95,17 @@ function ItemRetorno({ item, nome, expandido, onEnviar }) {
       onToggle={evento => setMostrar(evento.currentTarget.open)}>
       <summary>
         <div><h2 className="font-bold">{item.titulo}</h2></div>
-        <span className="status-pill">{statusRetorno(item.situacao, resposta)}</span>
+        <span className={atrasada ? 'status-pill status-danger' : 'status-pill'}>
+          {atrasada ? (resposta ? 'Complemento em atraso' : 'Resposta em atraso') : statusRetorno(item.situacao, resposta)}
+        </span>
       </summary>
       <div className="action-detail space-y-3">
         {item.observacao && <p className="whitespace-pre-wrap break-words text-sm text-slate-700">{item.observacao}</p>}
         {item.orientacao && <div className="whitespace-pre-wrap break-words rounded-xl bg-slate-50 p-3 text-sm">
           <p className="font-semibold">Orientação da gestão</p><p>{item.orientacao}</p>
         </div>}
-        {item.prazo && <p className="text-sm"><strong>Prazo da gestão</strong> · {dataBr(item.prazo)}</p>}
+        {prazoResposta && <p className="text-sm"><strong>{resposta ? 'Prazo do complemento' : 'Prazo para responder'}</strong> · {dataBr(prazoResposta)}</p>}
+        {item.prazo && <p className="text-sm"><strong>Prazo da correção definido pela gestão</strong> · {dataBr(item.prazo)}</p>}
         {resposta && <div className="rounded-xl border p-3"><ResumoRetornoSupervisao resposta={resposta} /></div>}
         {podeAtualizar && !atualizar && <button type="button" className="app-secondary" onClick={() => setAtualizar(true)}>
           Registrar atualização
@@ -176,13 +181,14 @@ export default function RetornoSupervisaoScreen({ token }) {
           </div>}
           {visita && <div className="field-card space-y-2 text-sm">
             <p>Responda cada apontamento e registre o responsável e a data da ação. O app salva cada resposta no envio.</p>
+            {visita.prazo_resposta && <p><strong>Prazo para responder</strong> · {dataBr(visita.prazo_resposta)}</p>}
             {visita.data_retorno && <p><strong>Nova visita prevista</strong> · {dataBr(visita.data_retorno)}</p>}
             <p><strong>Link válido até</strong> · {dataHoraBr(visita.expira_em)}</p>
           </div>}
           <p role="status" className={aviso ? 'field-card text-sm' : 'sr-only'}>{aviso}</p>
           {visita && !total && <p className="field-card text-sm">Esta vistoria não tem apontamentos disponíveis.</p>}
           {itens.map(item => <ItemRetorno key={item.id} item={item} nome={nome}
-            expandido={item.id === primeiroPendente?.id} onEnviar={enviar} />)}
+            expandido={item.id === primeiroPendente?.id} prazoLink={visita.prazo_resposta} onEnviar={enviar} />)}
         </main>
       </div>
     </div>

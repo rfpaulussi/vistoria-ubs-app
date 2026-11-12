@@ -94,3 +94,11 @@ Aplique a migração `20261112000100_retorno_supervisao.sql` no Supabase de test
 5. Revogue ou substitua o link e confirme que o endereço anterior para de funcionar. O app preserva o histórico interno de respostas.
 
 O link contém uma credencial de acesso individual e o banco guarda apenas seu resumo criptográfico. O nome digitado identifica quem declarou o retorno. Compartilhe o link diretamente com o supervisor designado. A página apresenta os apontamentos em acompanhamento no momento da emissão. Correções feitas durante a vistoria e textos das considerações gerais não geram novos apontamentos. Quando a gestão define um prazo, ele prevalece no painel sobre a data proposta pela supervisão.
+
+### Prazo de resposta e fila da encarregada
+
+Aplique a migração 20261112000200_prazo_resposta_encarregada.sql antes de publicar esta versão. A aba **Retornos** mostra as vistorias finalizadas pelo usuário de campo que está logado. O relatório da vistoria também oferece um atalho para abrir seus apontamentos. A gestão pode acompanhar as vistorias de todas as encarregadas.
+
+- A encarregada informa um prazo ao gerar o link. Em um link já ativo, **Salvar prazo no mesmo link** atualiza a data preservando o endereço. Links anteriores à migração recebem o prazo quando alguém o definir.
+- O prazo de resposta vale para o retorno inicial de cada apontamento. Ao solicitar complemento, informe o novo prazo para aquele item. Depois do prazo, o app sinaliza o atraso e aceita o retorno enquanto o link estiver válido.
+- A encarregada pode aceitar um plano, registrar ciência de um impedimento, pedir complemento ou validar uma correção informada. O plano e o impedimento seguem em acompanhamento. A correção validada encerra o item. A revisão fica vinculada ao usuário logado.
