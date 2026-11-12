@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ClipboardCheck } from 'lucide-react';
+import { CalendarDays, ClipboardCheck, Clock3, Link2, Send } from 'lucide-react';
 import ResumoRetornoSupervisao from '../components/ResumoRetornoSupervisao';
 import { dataBr, dataHoraBr, hoje, operacaoSupervisao, prazoDeResposta, situacoesRetorno, statusRetorno } from '../lib/retornoSupervisao';
 import { normalizarUnidade } from '../lib/unidades';
 
-const instrucoes = {
-  planejada: 'Descreva o que será feito para atender este apontamento.',
-  corrigida: 'Descreva a correção realizada.',
-  impedida: 'Descreva o impedimento, de quem depende e qual será o próximo encaminhamento.',
+const opcoesRetorno = {
+  planejada: { emoji: '📅', resumo: 'A ação tem um prazo', campo: 'O que será feito?', exemplo: 'Descreva a ação planejada.' },
+  corrigida: { emoji: '✅', resumo: 'A ação já foi concluída', campo: 'O que foi corrigido?', exemplo: 'Descreva a correção realizada.' },
+  impedida: { emoji: '⚠️', resumo: 'Algo impede a correção', campo: 'O que impede a correção?', exemplo: 'Informe o impedimento, de quem depende e o próximo passo.' },
 };
 
 function FormularioRetorno({ item, nome, onEnviar }) {
@@ -18,6 +18,7 @@ function FormularioRetorno({ item, nome, onEnviar }) {
   const corrigida = situacao === 'corrigida';
   const planejada = situacao === 'planejada';
   const complemento = anterior?.decisao === 'devolvido';
+  const opcao = opcoesRetorno[situacao];
 
   async function enviar(evento) {
     evento.preventDefault();
@@ -45,21 +46,29 @@ function FormularioRetorno({ item, nome, onEnviar }) {
   return (
     <form onSubmit={enviar} className="mt-4 border-t pt-4">
       <fieldset disabled={ocupado} className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <fieldset className="min-w-0 sm:col-span-2">
+          <legend className="mb-2 text-sm font-bold">Qual é a situação?</legend>
+          <div className="retorno-opcoes">
+            {Object.entries(opcoesRetorno).map(([valor, escolha]) => (
+              <label className="retorno-opcao" data-tipo={valor} key={valor}>
+                <input type="radio" name="situacao" value={valor} required
+                  checked={situacao === valor} onChange={() => setSituacao(valor)} />
+                <span aria-hidden="true" className="retorno-opcao-emoji">{escolha.emoji}</span>
+                <span><strong>{situacoesRetorno[valor]}</strong><small>{escolha.resumo}</small></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <label className="grid content-start gap-1 text-sm font-semibold">Seu nome
           <input name="nome" className="app-input" autoComplete="name" maxLength={120} required defaultValue={nome} />
         </label>
-        <label className="grid content-start gap-1 text-sm font-semibold">Situação informada
-          <select name="situacao" className="app-input" value={situacao} required onChange={e => setSituacao(e.target.value)}>
-            <option value="">Selecione</option>
-            {Object.entries(situacoesRetorno).map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-semibold sm:col-span-2">Resposta ao apontamento
-          <textarea name="descricao" className="app-input" rows={3} maxLength={2000} required
-            placeholder={instrucoes[situacao]} defaultValue={complemento ? anterior.descricao : ''} />
-        </label>
-        <label className="grid content-start gap-1 text-sm font-semibold">Responsável pela ação ou encaminhamento
+        <label className="grid content-start gap-1 text-sm font-semibold">
+          {situacao === 'impedida' ? 'Quem pode encaminhar?' : 'Responsável pela ação'}
           <input name="responsavel" className="app-input" maxLength={120} required defaultValue={anterior?.responsavel} />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold sm:col-span-2">{opcao?.campo ?? 'Resposta ao apontamento'}
+          <textarea name="descricao" className="app-input" rows={3} maxLength={2000} required
+            placeholder={opcao?.exemplo} defaultValue={complemento ? anterior.descricao : ''} />
         </label>
         <label className="grid content-start gap-1 text-sm font-semibold">
           {corrigida ? 'Data da correção' : planejada ? 'Prazo para execução' : 'Prazo previsto (opcional)'}
@@ -71,7 +80,8 @@ function FormularioRetorno({ item, nome, onEnviar }) {
           <textarea name="comprovacao" className="app-input" rows={2} maxLength={1000}
             placeholder="Ex.: número do pedido, data da entrega ou link da evidência." defaultValue={complemento ? anterior.comprovacao : ''} />
         </label>
-        <button className="app-primary sm:justify-self-start" type="submit">
+        <button className="app-primary justify-center sm:col-span-2 sm:justify-self-start" type="submit">
+          <Send size={16} aria-hidden="true" />
           {ocupado ? 'Enviando…' : complemento ? 'Enviar complemento' : 'Enviar resposta'}
         </button>
       </fieldset>
@@ -89,18 +99,23 @@ function ItemRetorno({ item, nome, expandido, prazoLink, onEnviar }) {
   const aberto = item.situacao !== 'resolvido';
   const podeAtualizar = aberto && resposta?.decisao === 'aceito';
   const formulario = aberto && (!resposta || resposta.decisao === 'devolvido' || podeAtualizar && atualizar);
+  const tom = !aberto ? 'resolvido' : atrasada || resposta?.decisao === 'devolvido' ? 'atrasado'
+    : resposta ? 'respondido' : 'pendente';
 
   return (
-    <details className="field-card action-card supervisao-vistoria" open={mostrar}
+    <details className="field-card action-card supervisao-vistoria retorno-item" data-tom={tom} open={mostrar}
       onToggle={evento => setMostrar(evento.currentTarget.open)}>
       <summary>
         <div><h2 className="font-bold">{item.titulo}</h2></div>
-        <span className={atrasada ? 'status-pill status-danger' : 'status-pill'}>
+        <span className="status-pill retorno-status">
           {atrasada ? (resposta ? 'Complemento em atraso' : 'Resposta em atraso') : statusRetorno(item.situacao, resposta)}
         </span>
       </summary>
       <div className="action-detail space-y-3">
-        {item.observacao && <p className="whitespace-pre-wrap break-words text-sm text-slate-700">{item.observacao}</p>}
+        {item.observacao && <div className="retorno-observacao whitespace-pre-wrap break-words text-sm">
+          <p className="font-bold">O que foi apontado</p>
+          <p>{item.observacao}</p>
+        </div>}
         {item.orientacao && <div className="whitespace-pre-wrap break-words rounded-xl bg-slate-50 p-3 text-sm">
           <p className="font-semibold">Orientação da gestão</p><p>{item.orientacao}</p>
         </div>}
@@ -179,14 +194,21 @@ export default function RetornoSupervisaoScreen({ token }) {
               setVersao(v => v + 1);
             }}>Tentar novamente</button>
           </div>}
-          {visita && <div className="field-card space-y-2 text-sm">
-            <p>Responda cada apontamento e registre o responsável e a data da ação. O app salva cada resposta no envio.</p>
-            {visita.prazo_resposta && <p><strong>Prazo para responder</strong> · {dataBr(visita.prazo_resposta)}</p>}
-            {visita.data_retorno && <p><strong>Nova visita prevista</strong> · {dataBr(visita.data_retorno)}</p>}
-            <p><strong>Link válido até</strong> · {dataHoraBr(visita.expira_em)}</p>
-          </div>}
+          {visita && <section className="retorno-datas" aria-label="Datas da vistoria">
+            {[
+              visita.prazo_resposta && ['Prazo para responder', dataBr(visita.prazo_resposta), Clock3],
+              visita.data_retorno && ['Nova visita prevista', dataBr(visita.data_retorno), CalendarDays],
+              ['Link válido até', dataHoraBr(visita.expira_em), Link2],
+            ].filter(Boolean).map(([rotulo, data, Icone]) => (
+              <div className="retorno-data" key={rotulo}>
+                <Icone size={18} aria-hidden="true" />
+                <span>{rotulo}<strong>{data}</strong></span>
+              </div>
+            ))}
+          </section>}
           <p role="status" className={aviso ? 'field-card text-sm' : 'sr-only'}>{aviso}</p>
           {visita && !total && <p className="field-card text-sm">Esta vistoria não tem apontamentos disponíveis.</p>}
+          {total > 0 && <h2 className="retorno-lista-titulo">Apontamentos da vistoria</h2>}
           {itens.map(item => <ItemRetorno key={item.id} item={item} nome={nome || visita.supervisor}
             expandido={item.id === primeiroPendente?.id} prazoLink={visita.prazo_resposta} onEnviar={enviar} />)}
         </main>
