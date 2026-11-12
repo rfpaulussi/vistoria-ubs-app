@@ -12,7 +12,9 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
   const opcoesId = useId();
   const [supervisores, setSupervisores] = useState(null);
   const [nomeDigitado, setNomeDigitado] = useState(null);
-  const [telefone, setTelefone] = useState('');
+  const [telefones, setTelefones] = useState({});
+  const [telefoneDigitado, setTelefone] = useState(null);
+  const telefone = telefoneDigitado ?? (Object.hasOwn(telefones, link?.supervisor) ? telefones[link.supervisor] : '');
   const digitos = telefone.replace(/\D/g, '');
   const numeroWhatsApp = /^(?:55)?[1-9][0-9](?:9[0-9]{8}|[2-5][0-9]{7})$/.test(digitos)
     ? (digitos.length > 11 ? digitos : '55' + digitos) : null;
@@ -24,7 +26,10 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
     let ativo = true;
     supabase.functions.invoke('equipe-posto', { body: { modo: 'supervisao', vistoriaId, unidade } })
       .then(({ data, error }) => {
-        if (ativo) setSupervisores(!error && Array.isArray(data?.supervisores) ? data.supervisores : false);
+        if (ativo) {
+          setSupervisores(!error && Array.isArray(data?.supervisores) ? data.supervisores : false);
+          setTelefones(!error && data?.telefones ? data.telefones : {});
+        }
       })
       .catch(() => { if (ativo) setSupervisores(false); });
     return () => { ativo = false; };
@@ -56,7 +61,7 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
         p_vistoria_id: vistoriaId, p_supervisor: supervisor, p_link_anterior: link?.id ?? null, p_prazo_resposta: prazo,
       });
       setNomeDigitado(null);
-      setTelefone('');
+      setTelefone(null);
       setGerado({ id: novo.id, url: urlRetorno(novo.token) });
       onAtualizar({ id: novo.id, supervisor: novo.supervisor, expira_em: novo.expira_em, prazo_resposta: novo.prazo_resposta, ativo: true });
       setPrazoDigitado(null);

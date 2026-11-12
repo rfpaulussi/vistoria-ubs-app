@@ -187,7 +187,19 @@ Deno.serve(async (req: Request) => {
         'perfis.ativo': 'eq.true', 'perfis.role': 'eq.supervisor',
       });
       const supervisores = [...new Set(vinculos.map(v => v.perfis.nome?.trim()).filter(Boolean))];
-      return json({ supervisores });
+      let agenda: Record<string, string> = {};
+      try {
+        agenda = JSON.parse(Deno.env.get('DEMAX_WHATSAPP_SUPERVISORES') ?? '{}') ?? {};
+      } catch {
+        console.error('Agenda de WhatsApp inválida');
+      }
+      const telefones: Record<string, string> = Object.create(null);
+      for (const nome of supervisores) {
+        if (!nome) continue;
+        const numero = agenda[nome.toLowerCase().replace(/\./g, '').trim()];
+        if (typeof numero === 'string' && /^55[1-9]\d{9,10}$/.test(numero)) telefones[nome] = numero;
+      }
+      return json({ supervisores, telefones });
     }
     const agora = new Date();
     const dia = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(agora);

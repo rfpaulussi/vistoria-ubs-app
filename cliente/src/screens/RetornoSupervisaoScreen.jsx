@@ -187,7 +187,7 @@ export default function RetornoSupervisaoScreen({ token }) {
           </div>}
           <p role="status" className={aviso ? 'field-card text-sm' : 'sr-only'}>{aviso}</p>
           {visita && !total && <p className="field-card text-sm">Esta vistoria não tem apontamentos disponíveis.</p>}
-          {itens.map(item => <ItemRetorno key={item.id} item={item} nome={nome}
+          {itens.map(item => <ItemRetorno key={item.id} item={item} nome={nome || visita.supervisor}
             expandido={item.id === primeiroPendente?.id} prazoLink={visita.prazo_resposta} onEnviar={enviar} />)}
         </main>
       </div>
