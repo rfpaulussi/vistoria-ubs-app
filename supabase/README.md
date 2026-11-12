@@ -82,3 +82,15 @@ Para registrar quem a encarregada encontrou no setor, aplique também `202611100
 A migração `20261110000600_checklist_paco.sql` habilita as respostas e fotos por item. Aplique-a uma vez no Supabase do Paço antes de salvar vistorias com o checklist. Use `VITE_PILOTO_PACO=true` somente no deploy do Paço e aponte suas variáveis Supabase para a base do piloto.
 
 Para ativar **Melhorar texto com IA** no Paço, aplique `20261109000300_assistencia_ia.sql` no Supabase do Paço, publique `assistencia-vistoria` nesse projeto e configure o segredo `ANTHROPIC_API_KEY` nos segredos da função. O ditado usa o reconhecimento de voz do navegador em português do Brasil e funciona independentemente da revisão. A vistoria guarda apenas o texto que a encarregada inserir e salvar.
+
+## Piloto de retorno da supervisão
+
+Aplique a migração `20261112000100_retorno_supervisao.sql` no Supabase de teste e configure o ambiente de prévia do worktree com as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` dessa base.
+
+1. Entre com um perfil `admin`. Em **Gestão**, busque a unidade e abra uma vistoria finalizada com apontamentos em acompanhamento.
+2. Informe o supervisor e selecione **Gerar link**. Copie o endereço ou abra o WhatsApp. Cada vistoria admite um link ativo por vez, válido por 60 dias. A gestão pode revogá-lo ou substituí-lo.
+3. Abra o link em uma janela anônima. Envie uma resposta por apontamento com nome declarado, ação ou impedimento, responsável e data quando aplicável. A referência para comprovação é opcional.
+4. Na gestão, selecione **Atualizar retornos**. Peça complemento ou revise a resposta. O supervisor usa o mesmo link para enviar um complemento ou registrar a execução de um plano aceito. Só a validação de uma correção encerra o apontamento por esse fluxo. A gestão pode consultar as versões e revisões anteriores.
+5. Revogue ou substitua o link e confirme que o endereço anterior para de funcionar. O app preserva o histórico interno de respostas.
+
+O link contém uma credencial de acesso individual e o banco guarda apenas seu resumo criptográfico. O nome digitado identifica quem declarou o retorno. Compartilhe o link diretamente com o supervisor designado. A página apresenta os apontamentos em acompanhamento no momento da emissão. Correções feitas durante a vistoria e textos das considerações gerais não geram novos apontamentos. Quando a gestão define um prazo, ele prevalece no painel sobre a data proposta pela supervisão.

@@ -10,6 +10,7 @@ import KPIsScreen from './src/screens/KPIsScreen';
 import AcessoSupabase from './src/components/AcessoSupabase';
 import GestaoScreen from './src/screens/GestaoScreen';
 import PacoScreen from './src/screens/PacoScreen';
+import RetornoSupervisaoScreen from './src/screens/RetornoSupervisaoScreen';
 
 function AppInner() {
   const { screen, perfil } = useApp();
@@ -41,6 +42,8 @@ function AppInner() {
 }
 
 export default function App() {
+  const fragmento = new URLSearchParams(window.location.hash.slice(1));
+  if (fragmento.has('retorno')) return <RetornoSupervisaoScreen token={fragmento.get('retorno')} />;
   return (
     <AcessoSupabase>
       {perfil => <AppProvider key={perfil?.id ?? 'legado'} perfil={perfil}><AppInner /></AppProvider>}

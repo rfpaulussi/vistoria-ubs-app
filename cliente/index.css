@@ -107,12 +107,14 @@
 .management-metric span { font-size: .75rem; font-weight: 700; }
 .metric-1 { background: #fff0d8; color: #854a0c; }
 .metric-2 { background: #e4f6ec; color: #135f4b; }
-.action-card summary { display: flex; align-items: center; justify-content: space-between; gap: .5rem; cursor: pointer; }
-.action-card summary::marker { content: ''; }
-.action-card summary::-webkit-details-marker { display: none; }
-.action-card summary::after { content: '+'; font-weight: 800; color: var(--campaign-ink); }
-.action-card[open] summary::after { content: '−'; }
-.action-card summary > div { flex: 1; }
+.action-card > summary { display: flex; align-items: center; justify-content: space-between; gap: .5rem; cursor: pointer; }
+.action-card > summary::marker { content: ''; }
+.action-card > summary::-webkit-details-marker { display: none; }
+.action-card > summary::after { content: '+'; font-weight: 800; color: var(--campaign-ink); }
+.action-card[open] > summary::after { content: '−'; }
+.action-card > summary > div { flex: 1; }
+.supervisao-vistoria > summary { flex-wrap: wrap; }
+.supervisao-vistoria > summary > div { flex-basis: 10rem; }
 .action-detail { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--campaign-line); }
 .legacy-screen-heading { background: var(--campaign-ink); color: white; }
 .history-detail { max-width: 740px; margin-inline: auto; }

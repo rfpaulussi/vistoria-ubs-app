@@ -113,9 +113,9 @@ export async function buscarItensRelatorio(id) {
     supabase.from('respostas')
       .select('item_id, item_titulo, resultado, critico, observacao, corrigido_na_visita').eq('vistoria_id', id),
     supabase.from('apontamentos')
-      .select('item_id, situacao, prazo, orientacao, responsavel_id, responsavel:perfis(nome)').eq('vistoria_id', id),
+      .select('item_id, situacao, prazo, prazo_supervisao, orientacao, responsavel_id, responsavel:perfis(nome)').eq('vistoria_id', id),
   ]);
-  const acoes = new Map(conferir(apontamentos).map(item => [item.item_id, item]));
+  const acoes = new Map(conferir(apontamentos).map(item => [item.item_id, { ...item, prazo: item.prazo ?? item.prazo_supervisao }]));
   return conferir(respostas).map(item => ({ ...item, acao: acoes.get(item.item_id) }));
 }
 
