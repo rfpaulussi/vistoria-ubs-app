@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Copy, Link2, MessageSquare } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import ResumoRetornoSupervisao from './ResumoRetornoSupervisao';
 import { dataBr, dataHoraBr, hoje, operacaoSupervisao, somarDias, statusRetorno, urlRetorno } from '../lib/retornoSupervisao';
 
@@ -8,6 +9,27 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
   const [gerado, setGerado] = useState(null);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
+  const opcoesId = useId();
+  const [supervisores, setSupervisores] = useState(null);
+  const [nomeDigitado, setNomeDigitado] = useState(null);
+  const [telefone, setTelefone] = useState('');
+  const digitos = telefone.replace(/\D/g, '');
+  const numeroWhatsApp = /^(?:55)?[1-9][0-9](?:9[0-9]{8}|[2-5][0-9]{7})$/.test(digitos)
+    ? (digitos.length > 11 ? digitos : '55' + digitos) : null;
+  const nome = nomeDigitado ?? (link?.ativo ? link.supervisor : null)
+    ?? (supervisores?.length === 1 ? supervisores[0] : link?.supervisor ?? '');
+
+  useEffect(() => {
+    if (!abertos) return;
+    let ativo = true;
+    supabase.functions.invoke('equipe-posto', { body: { modo: 'supervisao', vistoriaId, unidade } })
+      .then(({ data, error }) => {
+        if (ativo) setSupervisores(!error && Array.isArray(data?.supervisores) ? data.supervisores : false);
+      })
+      .catch(() => { if (ativo) setSupervisores(false); });
+    return () => { ativo = false; };
+  }, [vistoriaId, unidade, Boolean(abertos)]);
+
   const [prazoDigitado, setPrazoDigitado] = useState(null);
   const prazo = prazoDigitado ?? link?.prazo_resposta ?? somarDias(hoje(), 3);
   const url = link?.ativo && link.id === gerado?.id ? gerado?.url : null;
@@ -33,6 +55,8 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
       const novo = await operacaoSupervisao('emitir_link_supervisao', {
         p_vistoria_id: vistoriaId, p_supervisor: supervisor, p_link_anterior: link?.id ?? null, p_prazo_resposta: prazo,
       });
+      setNomeDigitado(null);
+      setTelefone('');
       setGerado({ id: novo.id, url: urlRetorno(novo.token) });
       onAtualizar({ id: novo.id, supervisor: novo.supervisor, expira_em: novo.expira_em, prazo_resposta: novo.prazo_resposta, ativo: true });
       setPrazoDigitado(null);
@@ -81,8 +105,8 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
       {abertos > 0 && <form onSubmit={emitir}>
         <fieldset disabled={ocupado} className="flex min-w-0 flex-wrap items-end gap-2">
           <label className="grid min-w-0 flex-1 basis-52 gap-1 text-sm font-semibold">Nome do supervisor
-            <input key={link?.id} name="supervisor" className="app-input" required maxLength={120}
-              defaultValue={link?.supervisor ?? ''} />
+            <input name="supervisor" className="app-input" required maxLength={120} list={opcoesId}
+              value={nome} onChange={evento => setNomeDigitado(evento.target.value)} />
           </label>
           <label className="grid gap-1 text-sm font-semibold">Prazo para responder
             <input name="prazo" type="date" className="app-input" min={hoje()} value={prazo}
@@ -95,18 +119,38 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
           </button>
           {link?.ativo && <button className="app-secondary" type="button" onClick={revogar}>Revogar acesso</button>}
         </fieldset>
+        <datalist id={opcoesId}>
+          {Array.isArray(supervisores) && supervisores.map(supervisor => <option key={supervisor} value={supervisor} />)}
+        </datalist>
+        <p className="mt-2 text-xs text-slate-600">
+          {supervisores === null ? 'Consultando supervisão no Demax Gestão…'
+            : supervisores === false ? 'Não foi possível consultar o Demax Gestão. Você pode informar o nome.'
+            : !supervisores.length ? 'Posto sem supervisor ativo no Demax Gestão. Informe o nome.'
+            : supervisores.length === 1 ? 'Supervisor no Demax Gestão: ' + supervisores[0] + '.'
+            : 'Há mais de um supervisor no Demax Gestão. Selecione quem vai responder.'}
+        </p>
         <p className="mt-2 text-sm text-slate-600">
           {abertos} {abertos === 1 ? 'apontamento em acompanhamento' : 'apontamentos em acompanhamento'}.
           {' '}{link?.ativo ? 'A substituição invalida o link anterior.' : 'O supervisor responde sem login.'}
         </p>
       </form>}
       {!abertos && link?.ativo && <button className="app-secondary" type="button" disabled={ocupado} onClick={revogar}>Revogar acesso</button>}
+      {link?.ativo && <p className="text-xs text-slate-600">
+        Revogar acesso desativa o link imediatamente e preserva as respostas já enviadas.
+        Para mudar só a data, use Salvar prazo no mesmo link.
+      </p>}
       {url && <div className="grid gap-2 rounded-xl bg-slate-50 p-3">
+        <label className="grid max-w-xs gap-1 text-sm font-semibold">
+          WhatsApp de {link.supervisor}
+          <input className="app-input" type="tel" value={telefone} placeholder="(11) 99999-9999"
+            onChange={evento => setTelefone(evento.target.value)} />
+        </label>
+        <p className="text-xs text-slate-600">Informe o número com DDD. O WhatsApp abre com a mensagem pronta para você conferir e enviar.</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="app-secondary" onClick={copiar}><Copy size={16} aria-hidden="true" /> Copiar link</button>
-          <a className="app-secondary" target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${encodeURIComponent(texto)}`}>
+          {numeroWhatsApp && <a className="app-secondary" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`}>
             <MessageSquare size={16} aria-hidden="true" /> Abrir no WhatsApp
-          </a>
+          </a>}
         </div>
         <label className="grid gap-1 text-sm font-semibold">Endereço para compartilhar
           <input className="app-input" value={url} readOnly onFocus={evento => evento.currentTarget.select()} />

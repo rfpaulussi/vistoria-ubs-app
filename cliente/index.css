@@ -328,3 +328,17 @@ select:focus {
   /* força render simples */
   backdrop-filter: none !important;
 }
+
+.acompanhamento-farol[data-farol], .management-metric[data-farol] {
+  background: var(--farol-fundo);
+  border-color: var(--farol-borda);
+}
+.management-metric[data-farol], .acompanhamento-farol[data-farol] > summary .status-pill {
+  color: var(--farol-texto);
+}
+.acompanhamento-farol[data-farol] > summary .status-pill {
+  background: var(--farol-borda);
+}
+[data-farol="vermelho"] { --farol-fundo: #fff1f2; --farol-borda: #fecdd3; --farol-texto: #881337; }
+[data-farol="amarelo"] { --farol-fundo: #fffbeb; --farol-borda: #fde68a; --farol-texto: #78350f; }
+[data-farol="verde"] { --farol-fundo: #ecfdf5; --farol-borda: #a7f3d0; --farol-texto: #065f46; }

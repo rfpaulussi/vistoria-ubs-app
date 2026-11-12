@@ -127,7 +127,8 @@ Deno.serve(async (req: Request) => {
   if (!urlVistoria || !chaveVistoria || !chaveGestao) return json({ codigo: 'INTEGRACAO_INDISPONIVEL' }, 503);
 
   const body = await req.json().catch(() => null);
-  const unidade = body?.unidade;
+  const supervisao = body?.modo === "supervisao";
+  let unidade = body?.unidade;
   if (typeof unidade !== 'string' || !unidade || unidade.length > 100) return json({ codigo: 'UNIDADE_INVALIDA' }, 400);
 
   try {
@@ -139,8 +140,22 @@ Deno.serve(async (req: Request) => {
     if (usuario.status === 401 || usuario.status === 403) return json({ codigo: 'SEM_ACESSO' }, 401);
     if (!usuario.ok) throw new Error(`auth: HTTP ${usuario.status}`);
     const { id } = await usuario.json();
-    const [perfil] = await consultar<{ id: string }>(vistoria, 'perfis', { select: 'id', id: `eq.${id}`, limit: '1' });
+    const [perfil] = await consultar<{ id: string; papel: string }>(vistoria, 'perfis', { select: 'id,papel', id: `eq.${id}`, limit: '1' });
     if (!perfil) return json({ codigo: 'SEM_ACESSO' }, 403);
+
+    if (supervisao) {
+      const vistoriaId = body?.vistoriaId;
+      if (typeof vistoriaId !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(vistoriaId)) {
+        return json({ codigo: 'VISTORIA_INVALIDA' }, 400);
+      }
+      if (!['admin', 'campo'].includes(perfil.papel)) return json({ codigo: 'SEM_ACESSO' }, 403);
+      const [visita] = await consultar<{ unidade: string }>(vistoria, 'vistorias', {
+        select: 'unidade', id: `eq.${vistoriaId}`, estado: 'eq.finalizada', limit: '1',
+        ...(perfil.papel === 'campo' ? { responsavel_id: `eq.${id}` } : {}),
+      });
+      if (!visita) return json({ codigo: 'SEM_ACESSO' }, 403);
+      unidade = visita.unidade;
+    }
 
     const [vinculo] = await consultar<{ posto_id: string | null }>(vistoria, 'postos_demax', {
       select: 'posto_id', unidade: `eq.${unidade}`, limit: '1',
@@ -165,6 +180,15 @@ Deno.serve(async (req: Request) => {
     });
     if (postos.length !== 1) return json({ codigo: 'POSTO_SEM_VINCULO' }, 409);
     const postoId = postos[0].id;
+    if (supervisao) {
+      const vinculos = await listar<{ perfis: { nome: string | null } }>(gestao, 'config_supervisores_postos', {
+        select: 'supervisor_id,perfis!supervisor_id!inner(nome)',
+        posto_id: `eq.${postoId}`, ativo: 'eq.true',
+        'perfis.ativo': 'eq.true', 'perfis.role': 'eq.supervisor',
+      });
+      const supervisores = [...new Set(vinculos.map(v => v.perfis.nome?.trim()).filter(Boolean))];
+      return json({ supervisores });
+    }
     const agora = new Date();
     const dia = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(agora);
     const funcionarios = await listar<Funcionario>(gestao, 'funcionarios', {
