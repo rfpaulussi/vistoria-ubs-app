@@ -329,14 +329,23 @@ select:focus {
   backdrop-filter: none !important;
 }
 
-.acompanhamento-farol[data-farol], .management-metric[data-farol] {
+.acompanhamento-farol.field-card {
+  padding: 0;
+  border: 0;
+}
+.acompanhamento-farol > summary {
   background: var(--farol-fundo);
-  border-color: var(--farol-borda);
+  border: 1px solid var(--farol-borda);
+  border-radius: 1.1rem;
+  padding: 1rem;
 }
-.management-metric[data-farol], .acompanhamento-farol[data-farol] > summary .status-pill {
+.acompanhamento-farol > .action-detail {
+  margin-top: 0;
+  border-top: 0;
+  padding: 1rem;
+}
+.acompanhamento-farol > summary .status-pill {
   color: var(--farol-texto);
-}
-.acompanhamento-farol[data-farol] > summary .status-pill {
   background: var(--farol-borda);
 }
 [data-farol="vermelho"] { --farol-fundo: #fff1f2; --farol-borda: #fecdd3; --farol-texto: #881337; }

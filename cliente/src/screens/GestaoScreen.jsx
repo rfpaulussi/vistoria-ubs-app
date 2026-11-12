@@ -126,12 +126,9 @@ function AcompanhamentoVistoria({ itens, perfis, administrador, selecionada, res
   }
   const aValidar = resumo?.a_validar ?? 0;
   const atrasadas = resumo?.respostas_atrasadas ?? 0;
-  const farol = !pendentes ? 'verde' : atrasadas || itens.some(item =>
-    item.situacao === 'aberto' || (item.situacao !== 'resolvido' && (item.prazo ?? item.prazo_supervisao) < hoje())
-  ) ? 'vermelho' : 'amarelo';
 
   return (
-    <details className="field-card action-card supervisao-vistoria acompanhamento-farol" data-farol={farol} open={selecionada || undefined} onToggle={evento => {
+    <details className="field-card action-card supervisao-vistoria" open={selecionada || undefined} onToggle={evento => {
       if (evento.currentTarget.open) setAberto(true);
     }}>
       <summary>
@@ -279,7 +276,7 @@ export default function GestaoScreen({ administrador, vistoriaSelecionada }) {
   return (
     <main className="app-content space-y-4">
       {estado === 'pronto' && <div className="management-metrics !grid-cols-2 sm:!grid-cols-5">
-        {metricas.map(([rotulo, valor, Icone], i) => <div key={rotulo} className="management-metric" data-farol={i === 4 ? "verde" : i === 2 ? "amarelo" : "vermelho"}>
+        {metricas.map(([rotulo, valor, Icone]) => <div key={rotulo} className="management-metric">
           <Icone size={17} aria-hidden="true" /><strong>{valor}</strong><span>{rotulo}</span>
         </div>)}
       </div>}
