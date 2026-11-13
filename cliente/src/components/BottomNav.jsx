@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 export default function BottomNav() {
   const { screen, setScreen, perfil } = useApp();
   if (screen === 'relatorio') return null;
-  const gestao = { screen: 'gestao', icon: ListChecks, label: perfil?.papel === 'admin' ? 'Gestão' : 'Retornos' };
+  const gestao = { screen: 'gestao', icon: ListChecks, label: 'Gestão' };
   const itensBase = perfil?.papel === 'admin' ? [gestao, ...NAV_ITEMS]
     : perfil ? [...NAV_ITEMS.filter(item => item.screen !== 'kpis'), gestao] : NAV_ITEMS;
   const paco = { screen: 'paco', icon: Building2, label: 'Paço' };

@@ -219,6 +219,11 @@ export function RevisaoSupervisao({ respostas, situacao, onRevisar }) {
         <span className="status-pill">{statusRetorno(situacao, atual)}</span>
       </div>
       {atual && <ResumoRetornoSupervisao resposta={atual} interno />}
+      {situacao !== 'resolvido' && atual?.decisao === 'aceito' && atual.situacao === 'planejada' && (
+        <p className="rounded-lg bg-white/75 p-3 text-sm text-slate-700">
+          <strong>Próximo passo.</strong> A encarregada acompanha o plano e registra a verificação da execução neste apontamento.
+        </p>
+      )}
       {atual && !atual.decisao && situacao !== 'resolvido' && (
         devolver ? (
           <form onSubmit={evento => {

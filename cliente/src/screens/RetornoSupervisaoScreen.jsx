@@ -97,7 +97,8 @@ function ItemRetorno({ item, nome, expandido, prazoLink, onEnviar }) {
   const prazoResposta = prazoDeResposta(item.situacao, resposta, prazoLink);
   const atrasada = prazoResposta && prazoResposta < hoje();
   const aberto = item.situacao !== 'resolvido';
-  const podeAtualizar = aberto && resposta?.decisao === 'aceito';
+  const planoAceito = resposta?.decisao === 'aceito' && resposta.situacao === 'planejada';
+  const podeAtualizar = aberto && resposta?.decisao === 'aceito' && !planoAceito;
   const formulario = aberto && (!resposta || resposta.decisao === 'devolvido' || podeAtualizar && atualizar);
   const tom = !aberto ? 'resolvido' : atrasada || resposta?.decisao === 'devolvido' ? 'atrasado'
     : resposta ? 'respondido' : 'pendente';
@@ -122,6 +123,7 @@ function ItemRetorno({ item, nome, expandido, prazoLink, onEnviar }) {
         {prazoResposta && <p className="text-sm"><strong>{resposta ? 'Prazo do complemento' : 'Prazo para responder'}</strong> · {dataBr(prazoResposta)}</p>}
         {item.prazo && <p className="text-sm"><strong>Prazo da correção definido pela gestão</strong> · {dataBr(item.prazo)}</p>}
         {resposta && <div className="rounded-xl border p-3"><ResumoRetornoSupervisao resposta={resposta} /></div>}
+        {aberto && planoAceito && <p className="text-sm text-slate-700">A encarregada vai acompanhar e registrar a verificação da execução.</p>}
         {podeAtualizar && !atualizar && <button type="button" className="app-secondary" onClick={() => setAtualizar(true)}>
           Registrar atualização
         </button>}
@@ -157,7 +159,7 @@ export default function RetornoSupervisaoScreen({ token }) {
         ? { ...item, resposta, situacao: 'em_andamento' } : item),
     }));
     setNome(resposta.respondido_por);
-    setAviso('Resposta registrada. A gestão pode acompanhar este retorno.');
+    setAviso('Resposta registrada. A encarregada pode acompanhar este retorno.');
   }
 
   const itens = visita?.itens ?? [];

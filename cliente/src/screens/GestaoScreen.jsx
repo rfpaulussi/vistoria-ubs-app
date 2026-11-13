@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { CircleAlert, Clock3, ListChecks, MessageSquare, RefreshCw } from 'lucide-react';
 import { LinkSupervisao, PrazoRetorno, RevisaoSupervisao, useRetornosSupervisao } from '../components/GestaoRetornoSupervisao';
+import VerificacaoExecucao from '../components/VerificacaoExecucao';
 import { dataBr, hoje, operacaoSupervisao, prazoDeResposta } from '../lib/retornoSupervisao';
 import { supabase } from '../lib/supabase';
 import { normalizarUnidade } from '../lib/unidades';
@@ -16,6 +17,8 @@ function Apontamento({ item, perfis, administrador, onSalvo, acompanhamento, onR
   const ultima = acompanhamento?.[0];
   const prazoResposta = prazoDeResposta(item.situacao, ultima, prazoLink);
   const paraValidar = item.situacao !== 'resolvido' && ultima && !ultima.decisao;
+  const aguardaExecucao = item.situacao !== 'resolvido' && ultima?.decisao === 'aceito'
+    && ultima.situacao === 'planejada';
 
   const farol = item.situacao === 'resolvido' ? 'verde'
     : paraValidar ? 'azul'
@@ -66,13 +69,17 @@ function Apontamento({ item, perfis, administrador, onSalvo, acompanhamento, onR
           )}
         </div>
         <span className={`status-pill ${vencido || resposta.critico && item.situacao !== 'resolvido' ? 'status-danger' : ''}`}>
-          {paraValidar ? 'Resposta para validar' : vencido ? 'Correção em atraso' : situacoes[item.situacao]}
+          {paraValidar ? 'Resposta para validar' : vencido ? 'Correção em atraso'
+            : aguardaExecucao ? 'Aguardando execução' : situacoes[item.situacao]}
         </span>
       </summary>
       <div className="action-detail space-y-3">
         {resposta.critico && <span className="status-pill status-danger">Apontamento crítico</span>}
         {resposta.observacao && <p className="whitespace-pre-wrap break-words text-sm text-slate-700">{resposta.observacao}</p>}
         {acompanhamento && <RevisaoSupervisao respostas={acompanhamento} situacao={item.situacao} onRevisar={onRevisar} />}
+        {Array.isArray(item.verificacoes_execucao) && <VerificacaoExecucao
+          plano={ultima} situacao={item.situacao} verificacoes={item.verificacoes_execucao}
+          onSalvo={campos => onSalvo(item.vistoria_id, item.item_id, campos)} />}
         {administrador ? (
           <form key={item.situacao} onSubmit={salvar}>
             <fieldset disabled={ocupado} className="min-w-0 grid gap-3 sm:grid-cols-2">
@@ -97,11 +104,8 @@ function Apontamento({ item, perfis, administrador, onSalvo, acompanhamento, onR
             </fieldset>
             {mensagem && <p role="status" className="mt-2 text-sm">{mensagem}</p>}
           </form>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <p><strong>Prazo da correção</strong> · {dataBr(prazo)}</p>
-            <p><strong>Orientação:</strong> {item.orientacao || 'Aguardando orientação da gestão.'}</p>
-          </div>
+        ) : item.orientacao?.trim() && (
+          <p className="text-sm"><strong>Orientação registrada</strong> · {item.orientacao}</p>
         )}
       </div>
     </details>
@@ -292,7 +296,7 @@ export default function GestaoScreen({ administrador, vistoriaSelecionada }) {
         </button>
       </div>
       {!administrador && <p className="text-sm text-slate-700">
-        Abra uma vistoria para encaminhar pendências, conferir as respostas do supervisor e registrar sua decisão por apontamento.
+        Você acompanha as vistorias que registrou. Abra um apontamento para aceitar o plano, pedir complemento ou validar a correção.
       </p>}
       {erroResumo && <p role="alert" className="text-sm text-red-800">Não foi possível atualizar os totais dos retornos.</p>}
       {estado === 'carregando' && <p role="status">Carregando apontamentos…</p>}
