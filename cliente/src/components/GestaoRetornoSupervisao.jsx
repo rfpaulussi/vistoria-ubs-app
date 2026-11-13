@@ -212,7 +212,8 @@ export function RevisaoSupervisao({ respostas, situacao, onRevisar }) {
   const aceitar = { corrigida: 'Validar correção e encerrar', planejada: 'Aceitar plano', impedida: 'Registrar ciência do impedimento' };
 
   return (
-    <section className="space-y-3 rounded-xl bg-slate-50 p-3">
+    <section className="gestao-retorno space-y-3 rounded-xl p-3"
+      data-tom={atual?.decisao === 'devolvido' ? 'impedida' : atual?.situacao}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="font-bold text-sm">Retorno da supervisão</h4>
         <span className="status-pill">{statusRetorno(situacao, atual)}</span>

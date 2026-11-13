@@ -124,10 +124,13 @@ function AcompanhamentoVistoria({ itens, perfis, administrador, selecionada, res
   }
   const aValidar = resumo?.a_validar ?? 0;
   const atrasadas = resumo?.respostas_atrasadas ?? 0;
+  const tomVistoria = aValidar > 0 ? 'resposta' : atrasadas > 0 ? 'atraso'
+    : pendentes ? 'pendente' : 'encerrada';
   const aguardamResposta = itens.some(item => item.situacao !== 'resolvido' && !respostasPorItem.has(item.item_id));
 
   return (
-    <details className="field-card action-card supervisao-vistoria" open={selecionada || undefined} onToggle={evento => {
+    <details className="field-card action-card supervisao-vistoria gestao-vistoria" data-tom={tomVistoria}
+      open={selecionada || undefined} onToggle={evento => {
       if (evento.currentTarget.open) setAberto(true);
     }}>
       <summary>
@@ -139,7 +142,7 @@ function AcompanhamentoVistoria({ itens, perfis, administrador, selecionada, res
           <MessageSquare size={13} aria-hidden="true" /> {aValidar} para validar
         </span>}
         {atrasadas > 0 && <span className="status-pill status-danger">{atrasadas} em atraso</span>}
-        <span className="status-pill">{pendentes ? `${pendentes} em acompanhamento` : 'Encerrada'}</span>
+        <span className="status-pill gestao-vistoria-situacao">{pendentes ? `${pendentes} em acompanhamento` : 'Encerrada'}</span>
       </summary>
       {aberto && <div className="action-detail space-y-3">
         {dados && <LinkSupervisao vistoriaId={id} unidade={unidade} link={dados.link}
