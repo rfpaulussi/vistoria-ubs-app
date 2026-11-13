@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CircleAlert, Clock3, ListChecks, RefreshCw } from 'lucide-react';
-import { LinkSupervisao, RevisaoSupervisao, useRetornosSupervisao } from '../components/GestaoRetornoSupervisao';
+import { CircleAlert, Clock3, ListChecks, MessageSquare, RefreshCw } from 'lucide-react';
+import { LinkSupervisao, PrazoRetorno, RevisaoSupervisao, useRetornosSupervisao } from '../components/GestaoRetornoSupervisao';
 import { dataBr, hoje, operacaoSupervisao, prazoDeResposta } from '../lib/retornoSupervisao';
 import { supabase } from '../lib/supabase';
 import { normalizarUnidade } from '../lib/unidades';
@@ -15,10 +15,11 @@ function Apontamento({ item, perfis, administrador, onSalvo, acompanhamento, onR
   const vencido = item.situacao !== 'resolvido' && prazo && prazo < hoje();
   const ultima = acompanhamento?.[0];
   const prazoResposta = prazoDeResposta(item.situacao, ultima, prazoLink);
-  const respostaAtrasada = prazoResposta && prazoResposta < hoje();
+  const paraValidar = item.situacao !== 'resolvido' && ultima && !ultima.decisao;
 
   const farol = item.situacao === 'resolvido' ? 'verde'
-    : vencido || respostaAtrasada || item.situacao === 'aberto' ? 'vermelho' : 'amarelo';
+    : paraValidar ? 'azul'
+    : vencido || (prazoResposta && prazoResposta < hoje()) || item.situacao === 'aberto' ? 'vermelho' : 'amarelo';
 
   async function salvar(evento) {
     evento.preventDefault();
@@ -56,24 +57,21 @@ function Apontamento({ item, perfis, administrador, onSalvo, acompanhamento, onR
       <summary>
         <div className="min-w-0">
           <h3 className="font-bold">{resposta.item_titulo}</h3>
-          {respostaAtrasada && <p className="text-sm font-semibold text-red-800">
-            {ultima ? 'Complemento em atraso' : 'Resposta em atraso'} · {dataBr(prazoResposta)}
-          </p>}
-          {acompanhamento?.[0]?.decisao == null && acompanhamento?.length > 0 && item.situacao !== 'resolvido' && (
-            <p className="text-sm font-semibold text-teal-800">Retorno aguardando validação</p>
-          )}
+          <div className="mt-1 flex flex-wrap gap-1">
+            <PrazoRetorno data={prazoResposta} rotulo={ultima ? 'Complemento até' : 'Responder até'} />
+            {item.situacao !== 'resolvido' && <PrazoRetorno data={prazo} rotulo="Corrigir até" />}
+          </div>
           {acompanhamento?.[0]?.decisao === 'devolvido' && item.situacao !== 'resolvido' && (
             <p className="text-sm text-slate-600">Complemento solicitado</p>
           )}
         </div>
         <span className={`status-pill ${vencido || resposta.critico && item.situacao !== 'resolvido' ? 'status-danger' : ''}`}>
-          {vencido ? 'Correção em atraso' : situacoes[item.situacao]}
+          {paraValidar ? 'Resposta para validar' : vencido ? 'Correção em atraso' : situacoes[item.situacao]}
         </span>
       </summary>
       <div className="action-detail space-y-3">
         {resposta.critico && <span className="status-pill status-danger">Apontamento crítico</span>}
         {resposta.observacao && <p className="whitespace-pre-wrap break-words text-sm text-slate-700">{resposta.observacao}</p>}
-        {prazoResposta && <p className="text-sm"><strong>{ultima ? 'Prazo do complemento' : 'Prazo para responder'}</strong> · {dataBr(prazoResposta)}</p>}
         {acompanhamento && <RevisaoSupervisao respostas={acompanhamento} situacao={item.situacao} onRevisar={onRevisar} />}
         {administrador ? (
           <form key={item.situacao} onSubmit={salvar}>
@@ -126,6 +124,7 @@ function AcompanhamentoVistoria({ itens, perfis, administrador, selecionada, res
   }
   const aValidar = resumo?.a_validar ?? 0;
   const atrasadas = resumo?.respostas_atrasadas ?? 0;
+  const aguardamResposta = itens.some(item => item.situacao !== 'resolvido' && !respostasPorItem.has(item.item_id));
 
   return (
     <details className="field-card action-card supervisao-vistoria" open={selecionada || undefined} onToggle={evento => {
@@ -136,13 +135,16 @@ function AcompanhamentoVistoria({ itens, perfis, administrador, selecionada, res
           <h3 className="font-bold">{unidade}</h3>
           <p className="text-sm text-slate-600">Vistoria de {dataBr(visita.data_vistoria)}</p>
         </div>
-        {aValidar > 0 && <span className="status-pill">{aValidar} para validar</span>}
+        {aValidar > 0 && <span className="status-pill gestao-resposta-recebida">
+          <MessageSquare size={13} aria-hidden="true" /> {aValidar} para validar
+        </span>}
         {atrasadas > 0 && <span className="status-pill status-danger">{atrasadas} em atraso</span>}
         <span className="status-pill">{pendentes ? `${pendentes} em acompanhamento` : 'Encerrada'}</span>
       </summary>
       {aberto && <div className="action-detail space-y-3">
         {dados && <LinkSupervisao vistoriaId={id} unidade={unidade} link={dados.link}
-          abertos={pendentes} onAtualizar={link => { atualizarLink(link); onResumo(id); }} />}
+          abertos={pendentes} aguardamResposta={aguardamResposta}
+          onAtualizar={link => { atualizarLink(link); onResumo(id); }} />}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h4 className="font-bold">Apontamentos</h4>
           <button type="button" className="app-secondary" onClick={() => { atualizar(); onResumo(id); }} disabled={estado === 'carregando'}>

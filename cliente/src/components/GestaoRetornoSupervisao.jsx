@@ -1,10 +1,26 @@
 import React, { useEffect, useId, useState } from 'react';
-import { Copy, Link2, MessageSquare } from 'lucide-react';
+import { Clock3, Copy, Link2, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ResumoRetornoSupervisao from './ResumoRetornoSupervisao';
 import { dataBr, dataHoraBr, hoje, operacaoSupervisao, somarDias, statusRetorno, urlRetorno } from '../lib/retornoSupervisao';
 
-export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar }) {
+function chaveSupervisor(nome) {
+  const chave = nome?.toLowerCase().replace(/\./g, '').trim();
+  return chave === 'hebert' ? 'heb' : chave;
+}
+
+export function PrazoRetorno({ data, rotulo }) {
+  if (!data) return null;
+  const dia = hoje();
+  const situacao = data < dia ? 'Vencido' : data === dia ? 'Vence hoje'
+    : data === somarDias(dia, 1) ? 'Vence amanhã' : null;
+  return <span className="gestao-prazo" data-prazo={data < dia ? 'vencido' : situacao ? 'proximo' : 'normal'}>
+    <Clock3 size={14} aria-hidden="true" />
+    <span>{rotulo} <time dateTime={data}>{dataBr(data)}</time>{situacao && <> · {situacao}</>}</span>
+  </span>;
+}
+
+export function LinkSupervisao({ vistoriaId, unidade, link, abertos, aguardamResposta, onAtualizar }) {
   const [ocupado, setOcupado] = useState(false);
   const [gerado, setGerado] = useState(null);
   const [mensagem, setMensagem] = useState('');
@@ -14,7 +30,11 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
   const [nomeDigitado, setNomeDigitado] = useState(null);
   const [telefones, setTelefones] = useState({});
   const [telefoneDigitado, setTelefone] = useState(null);
-  const telefone = telefoneDigitado ?? (Object.hasOwn(telefones, link?.supervisor) ? telefones[link.supervisor] : '');
+  const chave = chaveSupervisor(link?.supervisor);
+  const contatos = Object.entries(telefones).filter(([supervisor]) => chaveSupervisor(supervisor) === chave);
+  const telefoneCadastrado = Object.hasOwn(telefones, link?.supervisor)
+    ? telefones[link.supervisor] : contatos.length === 1 ? contatos[0][1] : '';
+  const telefone = telefoneDigitado ?? telefoneCadastrado;
   const digitos = telefone.replace(/\D/g, '');
   const numeroWhatsApp = /^(?:55)?[1-9][0-9](?:9[0-9]{8}|[2-5][0-9]{7})$/.test(digitos)
     ? (digitos.length > 11 ? digitos : '55' + digitos) : null;
@@ -103,10 +123,13 @@ export function LinkSupervisao({ vistoriaId, unidade, link, abertos, onAtualizar
   return (
     <section className="field-card space-y-3">
       <h4 className="flex items-center gap-2 font-bold"><Link2 size={17} aria-hidden="true" /> Link do supervisor</h4>
-      {link?.ativo && <p className="text-sm">
-        Link de <strong>{link.supervisor}</strong> válido até {dataHoraBr(link.expira_em)}.
-        {link.prazo_resposta && <> Prazo para responder até <strong>{dataBr(link.prazo_resposta)}</strong>.</>}
-      </p>}
+      {link?.ativo && <div className="grid justify-items-start gap-2">
+        {aguardamResposta && link.prazo_resposta && <PrazoRetorno data={link.prazo_resposta} rotulo="Prazo para responder" />}
+        {(!aguardamResposta || !link.prazo_resposta) && <p className="text-sm text-slate-700">
+          Prazo de resposta <strong>{dataBr(link.prazo_resposta)}</strong>
+        </p>}
+        <p className="text-xs text-slate-600">Link de <strong>{link.supervisor}</strong> válido até {dataHoraBr(link.expira_em)}.</p>
+      </div>}
       {abertos > 0 && <form onSubmit={emitir}>
         <fieldset disabled={ocupado} className="flex min-w-0 flex-wrap items-end gap-2">
           <label className="grid min-w-0 flex-1 basis-52 gap-1 text-sm font-semibold">Nome do supervisor

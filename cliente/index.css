@@ -351,6 +351,16 @@ select:focus {
 [data-farol="vermelho"] { --farol-fundo: #fff1f2; --farol-borda: #fecdd3; --farol-texto: #881337; }
 [data-farol="amarelo"] { --farol-fundo: #fffbeb; --farol-borda: #fde68a; --farol-texto: #78350f; }
 [data-farol="verde"] { --farol-fundo: #ecfdf5; --farol-borda: #a7f3d0; --farol-texto: #065f46; }
+[data-farol="azul"] { --farol-fundo: #eff6ff; --farol-borda: #bfdbfe; --farol-texto: #1e40af; }
+.status-pill.gestao-resposta-recebida { gap: .35rem; background: #dbeafe; color: #1e40af; }
+.gestao-prazo {
+  display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .5rem;
+  border-radius: .45rem; background: #f1f5f9; color: #334155; font-size: .75rem;
+}
+.gestao-prazo svg { flex-shrink: 0; }
+.gestao-prazo time { font-weight: 750; }
+.gestao-prazo[data-prazo="proximo"] { background: #fef3c7; color: #78350f; }
+.gestao-prazo[data-prazo="vencido"] { background: #ffe4e6; color: #881337; }
 
 .retorno-datas, .retorno-opcoes { display: grid; gap: .6rem; }
 .retorno-datas { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
